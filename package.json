@@ -1,0 +1,28 @@
+{
+  "name": "@npmcli/config",
+  "version": "0.0.0-pre.0",
+  "files": [
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "description": "Configuration management for the npm cli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/npm/npmconf"
+  },
+  "author": "Isaac Z. Schlueter <i@izs.me> (https://izs.me)",
+  "license": "ISC",
+  "scripts": {
+    "test": "tap",
+    "snap": "tap",
+    "preversion": "npm test",
+    "postversion": "npm publish",
+    "prepublishOnly": "git push origin --follow-tags"
+  },
+  "tap": {
+    "check-coverage": true
+  },
+  "devDependencies": {
+    "tap": "^14.10.8"
+  }
+}
