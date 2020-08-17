@@ -173,6 +173,9 @@ Fields:
 - `home` The user's home directory, found by looking at `env.HOME` or
   calling `os.homedir()`.
 - `loaded` A boolean indicating whether or not configs are loaded
+- `valid` A getter that returns `true` if all the config objects are valid.
+  Any data objects that have been modified with `config.set(...)` will be
+  re-evaluated when `config.valid` is read.
 
 ### `config.load()`
 
@@ -202,9 +205,18 @@ stack.
 
 Delete the configuration key from the specified level in the config stack.
 
-### `config.validate()`
+### `config.validate(where)`
 
-Verify that all known configuration options are set to valid values.
+Verify that all known configuration options are set to valid values, and
+log a warning if they are invalid.
+
+If `where` is not set, then all config objects are validated.
+
+Returns `true` if all configs are valid.
+
+Note that it's usually enough (and more efficient) to just check
+`config.valid`, since each data object is marked for re-evaluation on every
+`config.set()` operation.
 
 ### `config.save(where)`
 

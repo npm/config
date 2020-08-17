@@ -214,7 +214,7 @@ loglevel = yolo
     config.argv = []
 
     t.throws(() => config.loadCLI(), {
-      message: 'double-loading "cli" configs from (command line options), previously loaded from (command line options)'
+      message: 'double-loading "cli" configs from command line options, previously loaded from command line options'
     })
     t.rejects(() => config.loadUserConfig(), {
       message: `double-loading "user" configs from ${resolve(path, 'should-not-load-this-file')}, previously loaded from ${resolve(path, 'user/.npmrc-from-builtin')}`
@@ -246,10 +246,10 @@ loglevel = yolo
     })
 
     t.match(config.sources, new Map([
-      ['(default values)', 'default'],
+      ['default values', 'default'],
       [resolve(path, 'npm/npmrc'), 'builtin'],
-      ['(command line options)', 'cli'],
-      ['(environment)', 'env'],
+      ['command line options', 'cli'],
+      ['environment', 'env'],
       [resolve(path, 'project/.npmrc'), 'project'],
       [resolve(path, 'user/.npmrc-from-builtin'), 'user'],
       [resolve(path, 'global/etc/npmrc'), 'global'],
@@ -284,9 +284,9 @@ loglevel = yolo
     }, 'set env values')
 
     t.strictSame(logs, [
-      [ 'warn', 'invalid config', 'registry="hello"', 'set in cli options' ],
+      [ 'warn', 'invalid config', 'registry="hello"', 'set in command line options' ],
       [ 'warn', 'invalid config', 'Must be', 'full url with "http://"' ],
-      [ 'warn', 'invalid config', 'prefix=true', 'set in cli options' ],
+      [ 'warn', 'invalid config', 'prefix=true', 'set in command line options' ],
       [ 'warn', 'invalid config', 'Must be', 'valid filesystem path' ],
       [ 'warn', 'invalid config', 'loglevel="yolo"',
         `set in ${resolve(path, 'project/.npmrc')}`],
@@ -295,6 +295,7 @@ loglevel = yolo
           'verbose', 'silly' ],
       ],
     ])
+    t.equal(config.valid, false)
     logs.length = 0
   })
 
@@ -326,10 +327,10 @@ loglevel = yolo
     }))
 
     t.match(config.sources, new Map([
-      ['(default values)', 'default'],
+      ['default values', 'default'],
       [resolve(path, 'npm/npmrc'), 'builtin'],
-      ['(command line options)', 'cli'],
-      ['(environment)', 'env'],
+      ['command line options', 'cli'],
+      ['environment', 'env'],
       ['(same as "user" config, ignored)', 'project'],
       [resolve(path, 'project/.npmrc'), 'user'],
     ]))
@@ -337,6 +338,7 @@ loglevel = yolo
     t.rejects(() => config.save('yolo'), {
       message: 'invalid config location param: yolo',
     })
+    t.equal(config.valid, false)
   })
 
   t.test('load configs from files, cli, and env, no builtin or project', async t => {
@@ -365,9 +367,9 @@ loglevel = yolo
     await config.load()
 
     t.match(config.sources, new Map([
-      ['(default values)', 'default'],
-      ['(command line options)', 'cli'],
-      ['(environment)', 'env'],
+      ['default values', 'default'],
+      ['command line options', 'cli'],
+      ['environment', 'env'],
       [resolve(path, 'user/.npmrc'), 'user'],
       [resolve(path, 'global/etc/npmrc'), 'global'],
     ]))
@@ -398,9 +400,9 @@ loglevel = yolo
     })
 
     t.strictSame(logs, [
-      [ 'warn', 'invalid config', 'registry="hello"', 'set in cli options' ],
+      [ 'warn', 'invalid config', 'registry="hello"', 'set in command line options' ],
       [ 'warn', 'invalid config', 'Must be', 'full url with "http://"' ],
-      [ 'warn', 'invalid config', 'prefix=true', 'set in cli options' ],
+      [ 'warn', 'invalid config', 'prefix=true', 'set in command line options' ],
       [ 'warn', 'invalid config', 'Must be', 'valid filesystem path' ]
     ])
   })
@@ -413,12 +415,13 @@ t.test('cafile loads as ca (and some saving tests)', async t => {
   const dir = t.testdir({
     '.npmrc': `cafile = ${cafile}`,
   })
+
   const config = new Config({
     shorthands,
     types,
     defaults,
     npmPath: __dirname,
-    env: { HOME: dir },
+    env: { HOME: dir, PREFIX: dir },
   })
   await config.load()
   const ca = config.get('ca')
@@ -433,6 +436,7 @@ t.test('cafile loads as ca (and some saving tests)', async t => {
   // do it again to verify we ignore the unlink error
   await config.save('user')
   t.throws(() => readFileSync(`${dir}/.npmrc`, 'utf8'), { code: 'ENOENT' })
+  t.equal(config.valid, true)
 })
 
 t.test('cafile ignored if ca set', async t => {
