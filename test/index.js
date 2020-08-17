@@ -645,7 +645,7 @@ t.test('finding the local prefix', t => {
       npmPath: path,
     })
     await c.load()
-    t.equal(c.localPrefix, path)
+    t.equal(c.localPrefix, resolve(path))
   })
   t.test('has node_modules', async t => {
     const c = new Config({
@@ -678,7 +678,7 @@ t.test('finding the local prefix', t => {
       npmPath: path,
     })
     await c.load()
-    t.equal(c.localPrefix, resolve('/this/path/does/not/exist/x/y/z'))
+    t.equal(c.localPrefix, '/this/path/does/not/exist/x/y/z')
   })
   t.end()
 })
