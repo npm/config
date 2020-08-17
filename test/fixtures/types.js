@@ -86,6 +86,7 @@ module.exports = {
   loglevel: ['silent', 'error', 'warn', 'notice', 'http', 'timing', 'info', 'verbose', 'silly'],
   'logs-max': Number,
   long: Boolean,
+  'multiple-numbers': [Array, Number],
   maxsockets: Number,
   message: String,
   'metrics-registry': [null, String],

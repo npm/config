@@ -141,6 +141,9 @@ loglevel = yolo
     'get',
     'foo',
     '--registry=hello',
+    '--omit=cucumber',
+    '--multiple-numbers=what kind of fruit is not a number',
+    '--multiple-numbers=a baNaNa!!',
     '-C',
   ]
 
@@ -286,13 +289,19 @@ loglevel = yolo
     t.strictSame(logs, [
       [ 'warn', 'invalid config', 'registry="hello"', 'set in command line options' ],
       [ 'warn', 'invalid config', 'Must be', 'full url with "http://"' ],
+      [ 'warn', 'invalid config', 'omit="cucumber"', 'set in command line options' ],
+      [ 'warn', 'invalid config', 'Must be one or more of:', 'dev, optional, peer' ],
+      [ 'warn', 'invalid config', 'multiple-numbers="what kind of fruit is not a number"', 'set in command line options' ],
+      [ 'warn', 'invalid config', 'Must be one or more', 'numeric value' ],
+      [ 'warn', 'invalid config', 'multiple-numbers="a baNaNa!!"', 'set in command line options' ],
+      [ 'warn', 'invalid config', 'Must be one or more', 'numeric value' ],
       [ 'warn', 'invalid config', 'prefix=true', 'set in command line options' ],
       [ 'warn', 'invalid config', 'Must be', 'valid filesystem path' ],
       [ 'warn', 'invalid config', 'loglevel="yolo"',
         `set in ${resolve(path, 'project/.npmrc')}`],
       [ 'warn', 'invalid config', 'Must be one of:',
         [ 'silent',  'error', 'warn', 'notice', 'http', 'timing', 'info',
-          'verbose', 'silly' ],
+          'verbose', 'silly' ].join(', '),
       ],
     ])
     t.equal(config.valid, false)
@@ -402,6 +411,12 @@ loglevel = yolo
     t.strictSame(logs, [
       [ 'warn', 'invalid config', 'registry="hello"', 'set in command line options' ],
       [ 'warn', 'invalid config', 'Must be', 'full url with "http://"' ],
+      [ 'warn', 'invalid config', 'omit="cucumber"', 'set in command line options' ],
+      [ 'warn', 'invalid config', 'Must be one or more of:', 'dev, optional, peer' ],
+      [ 'warn', 'invalid config', 'multiple-numbers="what kind of fruit is not a number"', 'set in command line options' ],
+      [ 'warn', 'invalid config', 'Must be one or more', 'numeric value' ],
+      [ 'warn', 'invalid config', 'multiple-numbers="a baNaNa!!"', 'set in command line options' ],
+      [ 'warn', 'invalid config', 'Must be one or more', 'numeric value' ],
       [ 'warn', 'invalid config', 'prefix=true', 'set in command line options' ],
       [ 'warn', 'invalid config', 'Must be', 'valid filesystem path' ]
     ])

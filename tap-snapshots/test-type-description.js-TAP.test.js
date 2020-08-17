@@ -245,6 +245,10 @@ Object {
     null,
     Function String(),
   ],
+  "multiple-numbers": Array [
+    Function Array(),
+    "numeric value",
+  ],
   "node-options": Array [
     null,
     Function String(),
