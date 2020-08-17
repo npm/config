@@ -413,8 +413,13 @@ loglevel = yolo
 t.test('cafile loads as ca (and some saving tests)', async t => {
   const cafile = resolve(__dirname, 'fixtures', 'cafile')
   const dir = t.testdir({
-    '.npmrc': `cafile = ${cafile}`,
+    '.npmrc': `cafile = ${cafile}
+_authToken = deadbeefcafebadfoobarbaz42069
+`,
   })
+  const expect = `cafile=${cafile}
+//registry.npmjs.org/:_authToken=deadbeefcafebadfoobarbaz42069
+`
 
   const config = new Config({
     shorthands,
@@ -428,9 +433,10 @@ t.test('cafile loads as ca (and some saving tests)', async t => {
   t.equal(ca.join('\n').trim(), readFileSync(cafile, 'utf8').replace(/\r\n/g, '\n').trim())
   await config.save('user')
   const res = readFileSync(`${dir}/.npmrc`, 'utf8')
-  t.equal(res.trim(), `cafile=${cafile}`, 'did not write back ca, only cafile')
+  t.equal(res, expect, 'did not write back ca, only cafile')
   // while we're here, test that saving an empty config file deletes it
   config.delete('cafile', 'user')
+  config.clearCredentialsByURI(config.get('registry'))
   await config.save('user')
   t.throws(() => readFileSync(`${dir}/.npmrc`, 'utf8'), { code: 'ENOENT' })
   // do it again to verify we ignore the unlink error

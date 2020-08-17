@@ -120,6 +120,14 @@ Object {
 exports[`test/index.js TAP credentials management none_authToken > default registry 1`] = `
 Object {
   "alwaysAuth": false,
+  "token": "0bad1de4",
+}
+`
+
+exports[`test/index.js TAP credentials management none_authToken > default registry after set 1`] = `
+Object {
+  "alwaysAuth": false,
+  "token": "0bad1de4",
 }
 `
 
