@@ -200,7 +200,19 @@ loglevel = yolo
     const gres = readFileSync(`${path}/global/etc/npmrc`, 'utf8')
     t.match(gres, 'asdf=quux')
 
+    const cliData = config.data.get('cli')
+    t.throws(() => cliData.loadError = true, {
+      message: 'cannot set ConfigData loadError after load',
+    })
+    t.throws(() => cliData.source = 'foo', {
+      message: 'cannot set ConfigData source more than once',
+    })
+    t.throws(() => cliData.raw = 1234, {
+      message: 'cannot set ConfigData raw after load',
+    })
+
     config.argv = []
+
     t.throws(() => config.loadCLI(), {
       message: 'double-loading "cli" configs from (command line options), previously loaded from (command line options)'
     })
@@ -209,6 +221,7 @@ loglevel = yolo
     })
 
     t.equal(config.loaded, true, 'config is loaded')
+
     await t.rejects(() => config.load(), {
       message: 'attempting to load npm config multiple times',
     })
@@ -271,11 +284,12 @@ loglevel = yolo
     }, 'set env values')
 
     t.strictSame(logs, [
-      [ 'warn', 'invalid config', 'registry="hello"' ],
+      [ 'warn', 'invalid config', 'registry="hello"', 'set in cli options' ],
       [ 'warn', 'invalid config', 'Must be', 'full url with "http://"' ],
-      [ 'warn', 'invalid config', 'prefix=true' ],
+      [ 'warn', 'invalid config', 'prefix=true', 'set in cli options' ],
       [ 'warn', 'invalid config', 'Must be', 'valid filesystem path' ],
-      [ 'warn', 'invalid config', 'loglevel="yolo"' ],
+      [ 'warn', 'invalid config', 'loglevel="yolo"',
+        `set in ${resolve(path, 'project/.npmrc')}`],
       [ 'warn', 'invalid config', 'Must be one of:',
         [ 'silent',  'error', 'warn', 'notice', 'http', 'timing', 'info',
           'verbose', 'silly' ],
@@ -286,8 +300,10 @@ loglevel = yolo
 
   t.test('do not double-load project/user config', async t => {
     const env = {
-      npm_config_foo: 'from-env'
+      npm_config_foo: 'from-env',
+      npm_config_globalconfig: '/this/path/does/not/exist',
     }
+
     const config = new Config({
       npmPath: `${path}/npm`,
       env,
@@ -299,8 +315,15 @@ loglevel = yolo
       defaults,
     })
     await config.load()
+
     config.argv = []
     t.equal(config.loaded, true, 'config is loaded')
+
+    t.match(config.data.get('global').loadError, { code: 'ENOENT' })
+    t.strictSame(config.data.get('env').raw, Object.assign(Object.create(null), {
+      foo: 'from-env',
+      globalconfig: '/this/path/does/not/exist',
+    }))
 
     t.match(config.sources, new Map([
       ['(default values)', 'default'],
@@ -321,6 +344,7 @@ loglevel = yolo
       npm_config_foo: 'from-env',
       HOME: `${path}/user`,
     }
+
     const config = new Config({
       // no builtin
       npmPath: path,
@@ -374,9 +398,9 @@ loglevel = yolo
     })
 
     t.strictSame(logs, [
-      [ 'warn', 'invalid config', 'registry="hello"' ],
+      [ 'warn', 'invalid config', 'registry="hello"', 'set in cli options' ],
       [ 'warn', 'invalid config', 'Must be', 'full url with "http://"' ],
-      [ 'warn', 'invalid config', 'prefix=true' ],
+      [ 'warn', 'invalid config', 'prefix=true', 'set in cli options' ],
       [ 'warn', 'invalid config', 'Must be', 'valid filesystem path' ]
     ])
   })
