@@ -34,9 +34,7 @@ module.exports = {
   description: true,
   dev: false,
   'dry-run': false,
-  editor: process.env.EDITOR ||
-          process.env.VISUAL ||
-          (isWindows ? 'notepad.exe' : 'vi'),
+  editor: 'vim',
   'engine-strict': false,
   force: false,
   'format-package-lock': true,
