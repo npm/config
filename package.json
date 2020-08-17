@@ -31,5 +31,8 @@
     "ini": "^1.3.5",
     "nopt": "^5.0.0",
     "mkdirp-infer-owner": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=10"
   }
 }
