@@ -2,6 +2,7 @@ const setEnvs = require('../lib/set-envs.js')
 
 const t = require('tap')
 const defaults = require('./fixtures/defaults.js')
+const { execPath } = process
 
 t.test('set envs that are not defaults and not already in env', t => {
   const envConf = Object.create(defaults)
@@ -11,11 +12,11 @@ t.test('set envs that are not defaults and not already in env', t => {
     HOME: undefined,
     PREFIX: undefined,
     npm_execpath: require.main.filename,
-    npm_node_execpath: process.execPath,
+    npm_node_execpath: execPath,
   }
 
   const env = {}
-  const config = { list: [cliConf, envConf], env, defaults }
+  const config = { list: [cliConf, envConf], env, defaults, execPath }
 
   setEnvs(config)
 
@@ -51,10 +52,10 @@ t.test('set envs that are not defaults and not already in env, array style', t =
     HOME: undefined,
     PREFIX: undefined,
     npm_execpath: require.main.filename,
-    npm_node_execpath: process.execPath,
+    npm_node_execpath: execPath,
   }
   const env = {}
-  const config = { list: [cliConf, envConf], env, defaults }
+  const config = { list: [cliConf, envConf], env, defaults, execPath }
   setEnvs(config)
   t.strictSame(env, { ...extras }, 'no new environment vars to create')
 
@@ -87,11 +88,11 @@ t.test('set envs that are not defaults and not already in env, boolean edition',
     HOME: undefined,
     PREFIX: undefined,
     npm_execpath: require.main.filename,
-    npm_node_execpath: process.execPath,
+    npm_node_execpath: execPath,
   }
 
   const env = {}
-  const config = { list: [cliConf, envConf], env, defaults }
+  const config = { list: [cliConf, envConf], env, defaults, execPath }
   setEnvs(config)
   t.strictSame(env, { ...extras }, 'no new environment vars to create')
   envConf.audit = false
@@ -127,7 +128,7 @@ t.test('set PREFIX based on DESTDIR', t => {
     PREFIX: '/usr/local',
     DESTDIR: '/some/dest',
     npm_execpath: require.main.filename,
-    npm_node_execpath: process.execPath,
+    npm_node_execpath: execPath,
   }
   const env = { DESTDIR: '/some/dest' }
   const config = {
@@ -135,6 +136,7 @@ t.test('set PREFIX based on DESTDIR', t => {
     env,
     defaults: d,
     globalPrefix: '/some/dest/usr/local',
+    execPath,
   }
   setEnvs(config)
   t.strictSame(env, { ...extras })
