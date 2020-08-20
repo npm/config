@@ -11,6 +11,14 @@ fs.readFile = (path, ...args) => {
     return readFile(path, ...args)
 }
 
+// when running with `npm test` it adds environment variables that
+// mess with the things we expect here, so delete all of those.
+Object.keys(process.env)
+  .filter(k => /^npm_/.test(k))
+  .forEach(k => delete process.env[k])
+delete process.env.PREFIX
+delete process.env.DESTDIR
+
 const shorthands = require('./fixtures/shorthands.js')
 const types = require('./fixtures/types.js')
 const typeDefs = require('../lib/type-defs.js')
