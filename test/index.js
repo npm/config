@@ -458,9 +458,9 @@ _authToken = deadbeefcafebadfoobarbaz42069
   })
   await config.load()
   const ca = config.get('ca')
-  t.equal(ca.join('\n').trim(), readFileSync(cafile, 'utf8').replace(/\r\n/g, '\n').trim())
+  t.equal(ca.join('\n').replace(/\r\n/g, '\n').trim(), readFileSync(cafile, 'utf8').replace(/\r\n/g, '\n').trim())
   await config.save('user')
-  const res = readFileSync(`${dir}/.npmrc`, 'utf8')
+  const res = readFileSync(`${dir}/.npmrc`, 'utf8').replace(/\r\n/g, '\n')
   t.equal(res, expect, 'did not write back ca, only cafile')
   // while we're here, test that saving an empty config file deletes it
   config.delete('cafile', 'user')
