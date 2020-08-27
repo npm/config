@@ -192,7 +192,8 @@ loglevel = yolo
 
   t.test('load configs from all files, cli, and env', async t => {
     const env = {
-      npm_config_foo: 'from-env'
+      npm_config_foo: 'from-env',
+      npm_config_global: '',
     }
     const config = new Config({
       npmPath: `${path}/npm`,
@@ -206,6 +207,9 @@ loglevel = yolo
       defaults,
     })
     await config.load()
+
+    t.equal(config.get('global', 'env'), undefined, 'empty env is missing')
+    t.equal(config.get('global'), false, 'empty env is missing')
 
     config.set('asdf', 'quux', 'global')
     await config.save('global')
