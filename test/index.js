@@ -194,6 +194,7 @@ loglevel = yolo
     const env = {
       npm_config_foo: 'from-env',
       npm_config_global: '',
+      npm_config_prefix: '/something',
     }
     const config = new Config({
       npmPath: `${path}/npm`,
@@ -206,7 +207,12 @@ loglevel = yolo
       shorthands,
       defaults,
     })
+
+    t.equal(config.globalPrefix, null, 'globalPrefix missing before load')
+
     await config.load()
+
+    t.equal(config.globalPrefix, resolve('/something'), 'env-defined prefix should have been loaded')
 
     t.equal(config.get('global', 'env'), undefined, 'empty env is missing')
     t.equal(config.get('global'), false, 'empty env is missing')
