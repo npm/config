@@ -2,6 +2,14 @@ const getUserAgent = require('../lib/get-user-agent.js')
 
 const t = require('tap')
 
+t.test('missing user-agent', t => {
+  const config = new Map()
+
+  const userAgent = getUserAgent(config)
+  t.equal(userAgent, '', 'should return an empty string')
+  t.end()
+})
+
 t.test('correctly generates a user-agent outside of ci', t => {
   const config = new Map(Object.entries({
     'user-agent': 'npm/{npm-version} node/{node-version} {platform} {arch} {ci}',
