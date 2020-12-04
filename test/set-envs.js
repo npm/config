@@ -142,3 +142,24 @@ t.test('set PREFIX based on DESTDIR', t => {
   t.strictSame(env, { ...extras })
   t.end()
 })
+
+t.test('dont set npm_execpath if require.main.filename is not set', t => {
+  const { filename } = require.main
+  t.teardown(() => require.main.filename = filename)
+  require.main.filename = null
+  // also, don't set editor
+  const d = { ...defaults, editor: null }
+  const envConf = Object.create(d)
+  const cliConf = Object.create(envConf)
+  const env = { DESTDIR: '/some/dest' }
+  const config = {
+    list: [cliConf, envConf],
+    env,
+    defaults: d,
+    globalPrefix: '/some/dest/usr/local',
+    execPath,
+  }
+  setEnvs(config)
+  t.equal(env.npm_execpath, undefined, 'did not set npm_execpath')
+  t.end()
+})
