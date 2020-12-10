@@ -3,11 +3,13 @@ const setEnvs = require('../lib/set-envs.js')
 const t = require('tap')
 const defaults = require('./fixtures/defaults.js')
 const { execPath } = process
+const cwd = process.cwd()
 
 t.test('set envs that are not defaults and not already in env', t => {
   const envConf = Object.create(defaults)
   const cliConf = Object.create(envConf)
   const extras = {
+    INIT_CWD: cwd,
     EDITOR: 'vim',
     HOME: undefined,
     PREFIX: undefined,
@@ -48,13 +50,15 @@ t.test('set envs that are not defaults and not already in env, array style', t =
   const envConf = Object.create(defaults)
   const cliConf = Object.create(envConf)
   const extras = {
+    INIT_CWD: '/some/other/path',
     EDITOR: 'vim',
     HOME: undefined,
     PREFIX: undefined,
     npm_execpath: require.main.filename,
     npm_node_execpath: execPath,
   }
-  const env = {}
+  // make sure it's sticky
+  const env = { INIT_CWD: '/some/other/path' }
   const config = { list: [cliConf, envConf], env, defaults, execPath }
   setEnvs(config)
   t.strictSame(env, { ...extras }, 'no new environment vars to create')
@@ -84,6 +88,7 @@ t.test('set envs that are not defaults and not already in env, boolean edition',
   const envConf = Object.create(defaults)
   const cliConf = Object.create(envConf)
   const extras = {
+    INIT_CWD: cwd,
     EDITOR: 'vim',
     HOME: undefined,
     PREFIX: undefined,
@@ -124,6 +129,7 @@ t.test('set PREFIX based on DESTDIR', t => {
   const envConf = Object.create(d)
   const cliConf = Object.create(envConf)
   const extras = {
+    INIT_CWD: cwd,
     HOME: undefined,
     PREFIX: '/usr/local',
     DESTDIR: '/some/dest',
