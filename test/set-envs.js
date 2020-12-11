@@ -4,11 +4,13 @@ const t = require('tap')
 const defaults = require('./fixtures/defaults.js')
 const { execPath } = process
 const cwd = process.cwd()
+const NODE = execPath
 
 t.test('set envs that are not defaults and not already in env', t => {
   const envConf = Object.create(defaults)
   const cliConf = Object.create(envConf)
   const extras = {
+    NODE,
     INIT_CWD: cwd,
     EDITOR: 'vim',
     HOME: undefined,
@@ -50,6 +52,7 @@ t.test('set envs that are not defaults and not already in env, array style', t =
   const envConf = Object.create(defaults)
   const cliConf = Object.create(envConf)
   const extras = {
+    NODE,
     INIT_CWD: '/some/other/path',
     EDITOR: 'vim',
     HOME: undefined,
@@ -88,6 +91,7 @@ t.test('set envs that are not defaults and not already in env, boolean edition',
   const envConf = Object.create(defaults)
   const cliConf = Object.create(envConf)
   const extras = {
+    NODE,
     INIT_CWD: cwd,
     EDITOR: 'vim',
     HOME: undefined,
@@ -129,6 +133,7 @@ t.test('set PREFIX based on DESTDIR', t => {
   const envConf = Object.create(d)
   const cliConf = Object.create(envConf)
   const extras = {
+    NODE,
     INIT_CWD: cwd,
     HOME: undefined,
     PREFIX: '/usr/local',
