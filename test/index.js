@@ -564,6 +564,18 @@ email = i@izs.me
 //registry.example/:always-auth = true
 `,
     },
+    def_userNoPass: {
+      '.npmrc': `username = hello
+email = i@izs.me
+//registry.example/:always-auth = true
+`,
+    },
+    def_passNoUser: {
+      '.npmrc': `_password = ${Buffer.from('world').toString('base64')}
+email = i@izs.me
+//registry.example/:always-auth = true
+`,
+    },
     def_auth: {
       '.npmrc': `_auth = ${Buffer.from('hello:world').toString('base64')}
 always-auth = true`,
@@ -595,6 +607,10 @@ always-auth = true`,
           username: 'foo',
           email: 'bar@baz.com',
         }), { message: 'must include password' })
+        t.throws(() => c.setCredentialsByURI('http://x.com', {
+          password: 'foo',
+          email: 'bar@baz.com',
+        }), { message: 'must include username' })
         c.setCredentialsByURI('http://x.com', {
           username: 'foo',
           password: 'bar',
@@ -617,14 +633,15 @@ always-auth = true`,
       const otherAfterDelete = c.getCredentialsByURI(otherReg)
       t.strictSame(Object.keys(otherAfterDelete), ['alwaysAuth'])
 
-      if (!d.token && !(d.email && d.username && d.password))
+      // we can have email on its own, but need both or none of user/pass
+      if (!d.token && (!d.email || (!!d.username !== !!d.password)))
         t.throws(() => c.setCredentialsByURI(defReg, d))
       else {
         c.setCredentialsByURI(defReg, d)
         t.matchSnapshot(c.getCredentialsByURI(defReg), 'default registry after set')
       }
 
-      if (!o.token && !(o.email && o.username && o.password))
+      if (!o.token && (!o.email || (!!o.username !== !!o.password)))
         t.throws(() => c.setCredentialsByURI(otherReg, o))
       else {
         c.setCredentialsByURI(otherReg, o)
@@ -753,4 +770,92 @@ t.test('finding the local prefix', t => {
     t.equal(c.localPrefix, '/this/path/does/not/exist/x/y/z')
   })
   t.end()
+})
+
+t.test('setting basic auth creds and email', async t => {
+  const registry = 'https://registry.npmjs.org/'
+  const path = t.testdir()
+  const _auth = Buffer.from('admin:admin').toString('base64')
+  const opts = {
+    shorthands: {},
+    argv: ['node', __filename, `--userconfig=${path}/.npmrc`],
+    defaults: {
+      registry,
+      'always-auth': false,
+    },
+    types: {},
+    npmPath: process.cwd(),
+  }
+  const c = new Config(opts)
+  await c.load()
+  t.throws(() => c.set('_auth'), 'cannot set _auth without first setting email')
+  c.set('email', 'name@example.com', 'user')
+  t.equal(c.get('email', 'user'), 'name@example.com', 'email was set')
+  await c.save('user')
+  t.equal(c.get('email', 'user'), undefined, 'email no longer top-level')
+  t.strictSame(c.getCredentialsByURI(registry), { email: 'name@example.com', alwaysAuth: false })
+  const d = new Config(opts)
+  await d.load()
+  t.strictSame(d.getCredentialsByURI(registry), { email: 'name@example.com', alwaysAuth: false })
+  d.set('_auth', _auth, 'user')
+  t.equal(d.get('_auth', 'user'), _auth, '_auth was set')
+  await d.save('user')
+  t.equal(d.get('_auth', 'user'), undefined, 'un-nerfed _auth deleted')
+  t.strictSame(d.getCredentialsByURI(registry), {
+    email: 'name@example.com',
+    username: 'admin',
+    password: 'admin',
+    auth: _auth,
+    alwaysAuth: false,
+  }, 'credentials saved and nerfed')
+})
+
+t.test('setting username/password/email individually', async t => {
+  const registry = 'https://registry.npmjs.org/'
+  const path = t.testdir()
+  const _auth = Buffer.from('admin:admin').toString('base64')
+  const opts = {
+    shorthands: {},
+    argv: ['node', __filename, `--userconfig=${path}/.npmrc`],
+    defaults: {
+      registry,
+      'always-auth': false,
+    },
+    types: {},
+    npmPath: process.cwd(),
+  }
+  const c = new Config(opts)
+  await c.load()
+  c.set('email', 'name@example.com', 'user')
+  t.equal(c.get('email'), 'name@example.com')
+  c.set('username', 'admin', 'user')
+  t.equal(c.get('username'), 'admin')
+  c.set('_password', Buffer.from('admin').toString('base64'), 'user')
+  t.equal(c.get('_password'), Buffer.from('admin').toString('base64'))
+  t.equal(c.get('_auth'), undefined)
+  await c.save('user')
+  t.equal(c.get('email'), undefined)
+  t.equal(c.get('username'), undefined)
+  t.equal(c.get('_password'), undefined)
+  t.equal(c.get('_auth'), undefined)
+  t.strictSame(c.getCredentialsByURI(registry), {
+    alwaysAuth: false,
+    email: 'name@example.com',
+    username: 'admin',
+    password: 'admin',
+    auth: Buffer.from('admin:admin').toString('base64'),
+  })
+  const d = new Config(opts)
+  await d.load()
+  t.equal(d.get('email'), undefined)
+  t.equal(d.get('username'), undefined)
+  t.equal(d.get('_password'), undefined)
+  t.equal(d.get('_auth'), undefined)
+  t.strictSame(d.getCredentialsByURI(registry), {
+    alwaysAuth: false,
+    email: 'name@example.com',
+    username: 'admin',
+    password: 'admin',
+    auth: Buffer.from('admin:admin').toString('base64'),
+  })
 })

@@ -20,6 +20,62 @@ Object {
 }
 `
 
+exports[`test/index.js TAP credentials management def_passNoUser > default registry 1`] = `
+Object {
+  "alwaysAuth": true,
+  "email": "i@izs.me",
+}
+`
+
+exports[`test/index.js TAP credentials management def_passNoUser > default registry after set 1`] = `
+Object {
+  "alwaysAuth": true,
+  "email": "i@izs.me",
+}
+`
+
+exports[`test/index.js TAP credentials management def_passNoUser > other registry 1`] = `
+Object {
+  "alwaysAuth": false,
+  "email": "i@izs.me",
+}
+`
+
+exports[`test/index.js TAP credentials management def_passNoUser > other registry after set 1`] = `
+Object {
+  "alwaysAuth": false,
+  "email": "i@izs.me",
+}
+`
+
+exports[`test/index.js TAP credentials management def_userNoPass > default registry 1`] = `
+Object {
+  "alwaysAuth": true,
+  "email": "i@izs.me",
+}
+`
+
+exports[`test/index.js TAP credentials management def_userNoPass > default registry after set 1`] = `
+Object {
+  "alwaysAuth": true,
+  "email": "i@izs.me",
+}
+`
+
+exports[`test/index.js TAP credentials management def_userNoPass > other registry 1`] = `
+Object {
+  "alwaysAuth": false,
+  "email": "i@izs.me",
+}
+`
+
+exports[`test/index.js TAP credentials management def_userNoPass > other registry after set 1`] = `
+Object {
+  "alwaysAuth": false,
+  "email": "i@izs.me",
+}
+`
+
 exports[`test/index.js TAP credentials management def_userpass > default registry 1`] = `
 Object {
   "alwaysAuth": true,
@@ -41,6 +97,13 @@ Object {
 `
 
 exports[`test/index.js TAP credentials management def_userpass > other registry 1`] = `
+Object {
+  "alwaysAuth": false,
+  "email": "i@izs.me",
+}
+`
+
+exports[`test/index.js TAP credentials management def_userpass > other registry after set 1`] = `
 Object {
   "alwaysAuth": false,
   "email": "i@izs.me",
