@@ -14,7 +14,6 @@ t.test('set envs that are not defaults and not already in env', t => {
     INIT_CWD: cwd,
     EDITOR: 'vim',
     HOME: undefined,
-    PREFIX: undefined,
     npm_execpath: require.main.filename,
     npm_node_execpath: execPath,
   }
@@ -56,7 +55,6 @@ t.test('set envs that are not defaults and not already in env, array style', t =
     INIT_CWD: cwd,
     EDITOR: 'vim',
     HOME: undefined,
-    PREFIX: undefined,
     npm_execpath: require.main.filename,
     npm_node_execpath: execPath,
   }
@@ -95,7 +93,6 @@ t.test('set envs that are not defaults and not already in env, boolean edition',
     INIT_CWD: cwd,
     EDITOR: 'vim',
     HOME: undefined,
-    PREFIX: undefined,
     npm_execpath: require.main.filename,
     npm_node_execpath: execPath,
   }
@@ -124,33 +121,6 @@ t.test('set envs that are not defaults and not already in env, boolean edition',
     ...extras,
     npm_config_audit: 'true'
   }, 'set in env, because changed from default in env, back to default in cli')
-  t.end()
-})
-
-t.test('set PREFIX based on DESTDIR', t => {
-  // also, don't set editor
-  const d = { ...defaults, editor: null }
-  const envConf = Object.create(d)
-  const cliConf = Object.create(envConf)
-  const extras = {
-    NODE,
-    INIT_CWD: cwd,
-    HOME: undefined,
-    PREFIX: '/usr/local',
-    DESTDIR: '/some/dest',
-    npm_execpath: require.main.filename,
-    npm_node_execpath: execPath,
-  }
-  const env = { DESTDIR: '/some/dest' }
-  const config = {
-    list: [cliConf, envConf],
-    env,
-    defaults: d,
-    globalPrefix: '/some/dest/usr/local',
-    execPath,
-  }
-  setEnvs(config)
-  t.strictSame(env, { ...extras })
   t.end()
 })
 
