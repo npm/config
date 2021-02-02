@@ -53,14 +53,14 @@ t.test('set envs that are not defaults and not already in env, array style', t =
   const cliConf = Object.create(envConf)
   const extras = {
     NODE,
-    INIT_CWD: '/some/other/path',
+    INIT_CWD: cwd,
     EDITOR: 'vim',
     HOME: undefined,
     PREFIX: undefined,
     npm_execpath: require.main.filename,
     npm_node_execpath: execPath,
   }
-  // make sure it's sticky
+  // make sure it's not sticky
   const env = { INIT_CWD: '/some/other/path' }
   const config = { list: [cliConf, envConf], env, defaults, execPath }
   setEnvs(config)
