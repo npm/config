@@ -2,6 +2,7 @@ const setEnvs = require('../lib/set-envs.js')
 
 const t = require('tap')
 const defaults = require('./fixtures/defaults.js')
+const definitions = require('./fixtures/definitions.js')
 const { execPath } = process
 const cwd = process.cwd()
 const NODE = execPath
@@ -19,7 +20,13 @@ t.test('set envs that are not defaults and not already in env', t => {
   }
 
   const env = {}
-  const config = { list: [cliConf, envConf], env, defaults, execPath }
+  const config = {
+    list: [cliConf, envConf],
+    env,
+    defaults,
+    definitions,
+    execPath,
+  }
 
   setEnvs(config)
 
@@ -60,7 +67,13 @@ t.test('set envs that are not defaults and not already in env, array style', t =
   }
   // make sure it's not sticky
   const env = { INIT_CWD: '/some/other/path' }
-  const config = { list: [cliConf, envConf], env, defaults, execPath }
+  const config = {
+    list: [cliConf, envConf],
+    env,
+    defaults,
+    definitions,
+    execPath,
+  }
   setEnvs(config)
   t.strictSame(env, { ...extras }, 'no new environment vars to create')
 
@@ -98,7 +111,13 @@ t.test('set envs that are not defaults and not already in env, boolean edition',
   }
 
   const env = {}
-  const config = { list: [cliConf, envConf], env, defaults, execPath }
+  const config = {
+    list: [cliConf, envConf],
+    env,
+    defaults,
+    definitions,
+    execPath,
+  }
   setEnvs(config)
   t.strictSame(env, { ...extras }, 'no new environment vars to create')
   envConf.audit = false
@@ -137,6 +156,7 @@ t.test('dont set npm_execpath if require.main.filename is not set', t => {
     list: [cliConf, envConf],
     env,
     defaults: d,
+    definitions,
     globalPrefix: '/some/dest/usr/local',
     execPath,
   }

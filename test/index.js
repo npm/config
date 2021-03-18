@@ -2,13 +2,19 @@ const t = require('tap')
 
 // hackedy hacky hack
 const fs = require('fs')
-const { readFile } = fs
+const { readFile, readFileSync } = fs
 fs.readFile = (path, ...args) => {
   if (path.match(/WEIRD-ERROR/)) {
     const cb = args.pop()
     cb(Object.assign(new Error('weird error'), { code: 'EWEIRD' }))
   } else
     return readFile(path, ...args)
+}
+fs.readFileSync = (path, ...args) => {
+  if (path.match(/WEIRD-ERROR/)) {
+    throw Object.assign(new Error('weird error'), { code: 'EWEIRD' })
+  } else
+    return readFileSync(path, ...args)
 }
 
 // when running with `npm test` it adds environment variables that
@@ -19,12 +25,11 @@ Object.keys(process.env)
 delete process.env.PREFIX
 delete process.env.DESTDIR
 
+const definitions = require('./fixtures/definitions.js')
 const shorthands = require('./fixtures/shorthands.js')
-const types = require('./fixtures/types.js')
+const flatten = require('./fixtures/flatten.js')
 const typeDefs = require('../lib/type-defs.js')
-const defaults = require('./fixtures/defaults.js')
 
-const { readFileSync } = require('fs')
 const { resolve, join, dirname } = require('path')
 
 const Config = require('../')
@@ -34,9 +39,7 @@ t.equal(typeDefs, Config.typeDefs, 'exposes type definitions')
 t.test('construct with no settings, get default values for stuff', t => {
   const npmPath = t.testdir()
   const c = new Config({
-    shorthands: {},
-    defaults: {},
-    types: {},
+    definitions: {},
     npmPath,
   })
 
@@ -148,6 +151,7 @@ loglevel = yolo
     'config',
     'get',
     'foo',
+    '--also=dev',
     '--registry=hello',
     '--omit=cucumber',
     '--access=blueberry',
@@ -162,9 +166,8 @@ loglevel = yolo
       env: {},
       argv: [process.execPath, __filename, '--userconfig', `${path}/npm/npmrc`],
       cwd: `${path}/project`,
-      types,
       shorthands,
-      defaults,
+      definitions,
     })
     await t.rejects(() => config.load(), {
       message: `double-loading config "${resolve(path, 'npm/npmrc')}" as "user", previously loaded as "builtin"`,
@@ -178,9 +181,8 @@ loglevel = yolo
       argv: [process.execPath, __filename, '--userconfig', `${path}/WEIRD-ERROR`],
       cwd: path,
       log,
-      types,
       shorthands,
-      defaults,
+      definitions,
     })
     logs.length = 0
     await config.load()
@@ -203,9 +205,8 @@ loglevel = yolo
       log,
       cwd: `${path}/project`,
 
-      types,
       shorthands,
-      defaults,
+      definitions,
     })
 
     t.equal(config.globalPrefix, null, 'globalPrefix missing before load')
@@ -318,6 +319,7 @@ loglevel = yolo
       [ 'warn', 'invalid config', 'Must be one or more', 'numeric value' ],
       [ 'warn', 'invalid config', 'prefix=true', 'set in command line options' ],
       [ 'warn', 'invalid config', 'Must be', 'valid filesystem path' ],
+      [ 'verbose', 'config', 'also', 'Please use --include=dev instead.' ],
       [ 'warn', 'invalid config', 'loglevel="yolo"',
         `set in ${resolve(path, 'project/.npmrc')}`],
       [ 'warn', 'invalid config', 'Must be one of:',
@@ -341,9 +343,8 @@ loglevel = yolo
       argv: [process.execPath, __filename, '--userconfig', `${path}/project/.npmrc`],
       cwd: `${path}/project`,
 
-      types,
       shorthands,
-      defaults,
+      definitions,
     })
     await config.load()
 
@@ -390,9 +391,8 @@ loglevel = yolo
       PREFIX: '/global',
       platform: 'posix',
 
-      types,
       shorthands,
-      defaults,
+      definitions,
     })
     await config.load()
 
@@ -441,7 +441,8 @@ loglevel = yolo
       [ 'warn', 'invalid config', 'multiple-numbers="a baNaNa!!"', 'set in command line options' ],
       [ 'warn', 'invalid config', 'Must be one or more', 'numeric value' ],
       [ 'warn', 'invalid config', 'prefix=true', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be', 'valid filesystem path' ]
+      [ 'warn', 'invalid config', 'Must be', 'valid filesystem path' ],
+      [ 'verbose', 'config', 'also', 'Please use --include=dev instead.' ],
     ])
   })
 
@@ -461,13 +462,16 @@ _authToken = deadbeefcafebadfoobarbaz42069
 
   const config = new Config({
     shorthands,
-    types,
-    defaults,
+    definitions,
     npmPath: __dirname,
     env: { HOME: dir, PREFIX: dir },
+    flatten,
   })
   await config.load()
-  const ca = config.get('ca')
+  t.equal(config.get('ca'), null, 'does not overwrite config.get')
+  const { flat } = config
+  t.equal(config.flat, flat, 'getter returns same value again')
+  const ca = flat.ca
   t.equal(ca.join('\n').replace(/\r\n/g, '\n').trim(), readFileSync(cafile, 'utf8').replace(/\r\n/g, '\n').trim())
   await config.save('user')
   const res = readFileSync(`${dir}/.npmrc`, 'utf8').replace(/\r\n/g, '\n')
@@ -495,8 +499,7 @@ fakey mc fakerson
 `
   const config = new Config({
     shorthands,
-    types,
-    defaults,
+    definitions,
     npmPath: __dirname,
     env: {
       HOME: dir,
@@ -517,8 +520,7 @@ t.test('ignore cafile if it does not load', async t => {
   })
   const config = new Config({
     shorthands,
-    types,
-    defaults,
+    definitions,
     npmPath: __dirname,
     env: { HOME: dir },
   })
@@ -536,12 +538,13 @@ t.test('raise error if reading ca file error other than ENOENT', async t => {
   })
   const config = new Config({
     shorthands,
-    types,
-    defaults,
+    definitions,
     npmPath: __dirname,
     env: { HOME: dir },
+    flatten,
   })
-  t.rejects(() => config.load(), { code: 'EWEIRD' })
+  await config.load()
+  t.throws(() => config.flat.ca, { code: 'EWEIRD' })
 })
 
 t.test('credentials management', async t => {
@@ -594,8 +597,7 @@ always-auth = true`,
       const c = new Config({
         npmPath: path,
         shorthands,
-        types,
-        defaults,
+        definitions,
         env: { HOME: resolve(path, testCase) },
         argv: ['node', 'file', '--registry', defReg],
       })
@@ -660,8 +662,7 @@ t.test('finding the global prefix', t => {
         PREFIX: '/prefix/env'
       },
       shorthands,
-      types,
-      defaults,
+      definitions,
       npmPath,
     })
     c.loadGlobalPrefix()
@@ -676,8 +677,7 @@ t.test('finding the global prefix', t => {
       platform: 'win32',
       execPath: '/path/to/nodejs/node.exe',
       shorthands,
-      types,
-      defaults,
+      definitions,
       npmPath,
     })
     c.loadGlobalPrefix()
@@ -689,8 +689,7 @@ t.test('finding the global prefix', t => {
       platform: 'posix',
       execPath: '/path/to/nodejs/bin/node',
       shorthands,
-      types,
-      defaults,
+      definitions,
       npmPath,
     })
     c.loadGlobalPrefix()
@@ -703,8 +702,7 @@ t.test('finding the global prefix', t => {
       execPath: '/path/to/nodejs/bin/node',
       env: { DESTDIR: '/some/dest/dir' },
       shorthands,
-      types,
-      defaults,
+      definitions,
       npmPath,
     })
     c.loadGlobalPrefix()
@@ -728,9 +726,8 @@ t.test('finding the local prefix', t => {
   t.test('explicit cli prefix', async t => {
     const c = new Config({
       argv: [process.execPath, __filename, '-C', path],
-      types,
       shorthands,
-      defaults,
+      definitions,
       npmPath: path,
     })
     await c.load()
@@ -739,9 +736,8 @@ t.test('finding the local prefix', t => {
   t.test('has node_modules', async t => {
     const c = new Config({
       cwd: `${path}/hasNM/x/y/z`,
-      types,
       shorthands,
-      defaults,
+      definitions,
       npmPath: path,
     })
     await c.load()
@@ -750,9 +746,8 @@ t.test('finding the local prefix', t => {
   t.test('has package.json', async t => {
     const c = new Config({
       cwd: `${path}/hasPJ/x/y/z`,
-      types,
       shorthands,
-      defaults,
+      definitions,
       npmPath: path,
     })
     await c.load()
@@ -761,9 +756,8 @@ t.test('finding the local prefix', t => {
   t.test('nada, just use cwd', async t => {
     const c = new Config({
       cwd: '/this/path/does/not/exist/x/y/z',
-      types,
       shorthands,
-      defaults,
+      definitions,
       npmPath: path,
     })
     await c.load()
@@ -779,11 +773,10 @@ t.test('setting basic auth creds and email', async t => {
   const opts = {
     shorthands: {},
     argv: ['node', __filename, `--userconfig=${path}/.npmrc`],
-    defaults: {
-      registry,
-      'always-auth': false,
+    definitions: {
+      registry: { default: registry },
+      'always-auth': { default: false },
     },
-    types: {},
     npmPath: process.cwd(),
   }
   const c = new Config(opts)
@@ -817,11 +810,10 @@ t.test('setting username/password/email individually', async t => {
   const opts = {
     shorthands: {},
     argv: ['node', __filename, `--userconfig=${path}/.npmrc`],
-    defaults: {
-      registry,
-      'always-auth': false,
+    definitions: {
+      registry: { default: registry },
+      'always-auth': { default: false },
     },
-    types: {},
     npmPath: process.cwd(),
   }
   const c = new Config(opts)
