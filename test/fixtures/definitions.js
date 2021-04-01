@@ -20,6 +20,15 @@ const maybeReadFile = file => {
 }
 
 const definitions = module.exports = {
+  methane: {
+    envExport: false,
+    type: String,
+    typeDescription: 'Greenhouse Gas',
+    default: 'CH4',
+    description: `
+      This is bad for the environment, for our children, do not put it there.
+    `,
+  },
   'multiple-numbers': {
     key: 'multiple-numbers',
     default: [],
