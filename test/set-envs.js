@@ -29,7 +29,6 @@ t.test('set envs that are not defaults and not already in env', t => {
   }
 
   setEnvs(config)
-
   t.strictSame(env, { ...extras }, 'no new environment vars to create')
   envConf.call = 'me, maybe'
   setEnvs(config)
@@ -97,7 +96,6 @@ t.test('set envs that are not defaults and not already in env, array style', t =
   t.end()
 })
 
-
 t.test('set envs that are not defaults and not already in env, boolean edition', t => {
   const envConf = Object.create(defaults)
   const cliConf = Object.create(envConf)
@@ -162,5 +160,33 @@ t.test('dont set npm_execpath if require.main.filename is not set', t => {
   }
   setEnvs(config)
   t.equal(env.npm_execpath, undefined, 'did not set npm_execpath')
+  t.end()
+})
+
+t.test('dont set configs marked as envExport:false', t => {
+  const envConf = Object.create(defaults)
+  const cliConf = Object.create(envConf)
+  const extras = {
+    NODE,
+    INIT_CWD: cwd,
+    EDITOR: 'vim',
+    HOME: undefined,
+    npm_execpath: require.main.filename,
+    npm_node_execpath: execPath,
+  }
+
+  const env = {}
+  const config = {
+    list: [cliConf, envConf],
+    env,
+    defaults,
+    definitions,
+    execPath,
+  }
+  setEnvs(config)
+  t.strictSame(env, { ...extras }, 'no new environment vars to create')
+  cliConf.methane = 'CO2'
+  setEnvs(config)
+  t.strictSame(env, { ...extras }, 'not exported, because envExport=false')
   t.end()
 })

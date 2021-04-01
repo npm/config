@@ -1,4 +1,5 @@
 module.exports = {
+  methane: 'CH4',
   access: null,
   all: false,
   'allow-same-version': false,
