@@ -851,3 +851,71 @@ t.test('setting username/password/email individually', async t => {
     auth: Buffer.from('admin:admin').toString('base64'),
   })
 })
+
+t.test('nerfdart auths set at the top level into the registry', async t => {
+  const registry = 'https://registry.npmjs.org/'
+  const _auth = Buffer.from('admin:admin').toString('base64')
+  const username = 'admin'
+  const _password = Buffer.from('admin').toString('base64')
+  const email = 'i@izs.me'
+  const _authToken = 'deadbeefblahblah'
+
+  // TODO(isaacs): We should NOT be requiring that email be nerfdarted.
+  // It's not particularly secret, and is only included in the "credentials"
+  // concept as an accident of history, because the old couchdb reg used it.
+  // It should be treated just like any other plain old config field.
+
+  // name: [ini, expect]
+  const cases = {
+    // TODO: should not require email
+    // '_auth only, no email': [ `_auth=${_auth}`, {
+    //   '//registry.npmjs.org/:username': username,
+    //   '//registry.npmjs.org/:_password': _password,
+    // }],
+    '_auth with email': [ `_auth=${_auth}\nemail=${email}`, {
+      '//registry.npmjs.org/:username': username,
+      '//registry.npmjs.org/:_password': _password,
+      // TODO: change to just 'email': email
+      '//registry.npmjs.org/:email': email,
+    }],
+    '_authToken alone': [ `_authToken=${_authToken}`, {
+      '//registry.npmjs.org/:_authToken': _authToken,
+    }],
+    '_authToken and email': [ `_authToken=${_authToken}\nemail=${email}`, {
+      '//registry.npmjs.org/:_authToken': _authToken,
+      // TODO: should include (un-nerf-darted) email
+      // email,
+    }],
+    // TODO: should not require email
+    // 'username and _password': [ `username=${username}\n_password=${_password}`, {
+    //   '//registry.npmjs.org/:username': username,
+    //   '//registry.npmjs.org/:_password': _password,
+    // }],
+    'username, password, email': [ `username=${username}\n_password=${_password}\nemail=${email}`, {
+      '//registry.npmjs.org/:username': username,
+      '//registry.npmjs.org/:_password': _password,
+      '//registry.npmjs.org/:email': 'i@izs.me',
+    }],
+    // handled invalid cases
+    'username, no _password': [`username=${username}`, {}],
+    '_password, no username': [`_password=${_password}`, {}],
+  }
+
+  for (const [name, [ini, expect]] of Object.entries(cases)) {
+    //console.log({name, ini, expect})
+    t.test(name, async t => {
+      const path = t.testdir({ '.npmrc': ini })
+      const opts = {
+        shorthands: {},
+        argv: ['node', __filename, `--userconfig=${path}/.npmrc`, `--globalconfig=${path}/npmrc`],
+        definitions: {
+          registry: { default: registry },
+        },
+        npmPath: process.cwd(),
+      }
+      const c = new Config(opts)
+      await c.load()
+      t.same(c.list[3], expect)
+    })
+  }
+})
