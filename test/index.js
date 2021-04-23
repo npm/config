@@ -404,8 +404,8 @@ loglevel = yolo
       [resolve(path, 'global/etc/npmrc'), 'global'],
     ]))
     // no builtin or project config
-    t.strictEqual(config.sources.get(resolve(path, 'npm/npmrc')), undefined)
-    t.strictEqual(config.sources.get(resolve(path, 'project/.npmrc')), undefined)
+    t.equal(config.sources.get(resolve(path, 'npm/npmrc')), undefined)
+    t.equal(config.sources.get(resolve(path, 'project/.npmrc')), undefined)
 
     t.strictSame({
       version: config.get('version'),
