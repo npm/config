@@ -8,6 +8,18 @@
 exports[`test/index.js TAP credentials management def_auth > default registry 1`] = `
 Object {
   "alwaysAuth": true,
+  "auth": "aGVsbG86d29ybGQ=",
+  "password": "world",
+  "username": "hello",
+}
+`
+
+exports[`test/index.js TAP credentials management def_auth > default registry after set 1`] = `
+Object {
+  "alwaysAuth": true,
+  "auth": "aGVsbG86d29ybGQ=",
+  "password": "world",
+  "username": "hello",
 }
 `
 
@@ -24,16 +36,10 @@ Object {
 }
 `
 
-exports[`test/index.js TAP credentials management def_passNoUser > default registry after set 1`] = `
-Object {
-  "alwaysAuth": true,
-  "email": "i@izs.me",
-}
-`
-
 exports[`test/index.js TAP credentials management def_passNoUser > other registry 1`] = `
 Object {
   "alwaysAuth": false,
+  "email": "i@izs.me",
 }
 `
 
@@ -44,16 +50,10 @@ Object {
 }
 `
 
-exports[`test/index.js TAP credentials management def_userNoPass > default registry after set 1`] = `
-Object {
-  "alwaysAuth": true,
-  "email": "i@izs.me",
-}
-`
-
 exports[`test/index.js TAP credentials management def_userNoPass > other registry 1`] = `
 Object {
   "alwaysAuth": false,
+  "email": "i@izs.me",
 }
 `
 
@@ -80,12 +80,25 @@ Object {
 exports[`test/index.js TAP credentials management def_userpass > other registry 1`] = `
 Object {
   "alwaysAuth": false,
+  "email": "i@izs.me",
 }
 `
 
 exports[`test/index.js TAP credentials management nerfed_auth > default registry 1`] = `
 Object {
   "alwaysAuth": false,
+  "auth": "aGVsbG86d29ybGQ=",
+  "password": "world",
+  "username": "hello",
+}
+`
+
+exports[`test/index.js TAP credentials management nerfed_auth > default registry after set 1`] = `
+Object {
+  "alwaysAuth": false,
+  "auth": "aGVsbG86d29ybGQ=",
+  "password": "world",
+  "username": "hello",
 }
 `
 
@@ -118,6 +131,14 @@ Object {
 exports[`test/index.js TAP credentials management nerfed_lcAuthToken > default registry 1`] = `
 Object {
   "alwaysAuth": false,
+  "token": "0bad1de4",
+}
+`
+
+exports[`test/index.js TAP credentials management nerfed_lcAuthToken > default registry after set 1`] = `
+Object {
+  "alwaysAuth": false,
+  "token": "0bad1de4",
 }
 `
 
@@ -150,6 +171,7 @@ Object {
 exports[`test/index.js TAP credentials management nerfed_userpass > other registry 1`] = `
 Object {
   "alwaysAuth": false,
+  "email": "i@izs.me",
 }
 `
 

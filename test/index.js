@@ -369,7 +369,7 @@ loglevel = yolo
     t.rejects(() => config.save('yolo'), {
       message: 'invalid config location param: yolo',
     })
-    t.equal(config.valid, false)
+    t.equal(config.valid, false, 'config should not be valid')
   })
 
   t.test('load configs from files, cli, and env, no builtin or project', async t => {
@@ -629,22 +629,33 @@ always-auth = true`,
 
       c.clearCredentialsByURI(defReg)
       const defAfterDelete = c.getCredentialsByURI(defReg)
-      t.strictSame(Object.keys(defAfterDelete), ['alwaysAuth'])
+      // we keep alwaysAuth, and MAY have email there, but nothing else.
+      {
+        const expectKeys = ['alwaysAuth']
+        if (defAfterDelete.email)
+          expectKeys.push('email')
+        t.strictSame(Object.keys(defAfterDelete), expectKeys)
+      }
 
       c.clearCredentialsByURI(otherReg)
       const otherAfterDelete = c.getCredentialsByURI(otherReg)
-      t.strictSame(Object.keys(otherAfterDelete), ['alwaysAuth'])
+      {
+        const expectKeys = ['alwaysAuth']
+        if (otherAfterDelete.email)
+          expectKeys.push('email')
+        t.strictSame(Object.keys(otherAfterDelete), expectKeys)
+      }
 
-      // we can have email on its own, but need both or none of user/pass
-      if (!d.token && (!d.email || (!!d.username !== !!d.password)))
+      // need both or none of user/pass
+      if (!d.token && (!d.username || !d.password))
         t.throws(() => c.setCredentialsByURI(defReg, d))
       else {
         c.setCredentialsByURI(defReg, d)
         t.matchSnapshot(c.getCredentialsByURI(defReg), 'default registry after set')
       }
 
-      if (!o.token && (!o.email || (!!o.username !== !!o.password)))
-        t.throws(() => c.setCredentialsByURI(otherReg, o))
+      if (!o.token && (!o.username || !o.password))
+        t.throws(() => c.setCredentialsByURI(otherReg, o), {}, { otherReg, o })
       else {
         c.setCredentialsByURI(otherReg, o)
         t.matchSnapshot(c.getCredentialsByURI(otherReg), 'other registry after set')
@@ -781,11 +792,10 @@ t.test('setting basic auth creds and email', async t => {
   }
   const c = new Config(opts)
   await c.load()
-  t.throws(() => c.set('_auth'), 'cannot set _auth without first setting email')
   c.set('email', 'name@example.com', 'user')
   t.equal(c.get('email', 'user'), 'name@example.com', 'email was set')
   await c.save('user')
-  t.equal(c.get('email', 'user'), undefined, 'email no longer top-level')
+  t.equal(c.get('email', 'user'), 'name@example.com', 'email still top level')
   t.strictSame(c.getCredentialsByURI(registry), { email: 'name@example.com', alwaysAuth: false })
   const d = new Config(opts)
   await d.load()
@@ -826,7 +836,7 @@ t.test('setting username/password/email individually', async t => {
   t.equal(c.get('_password'), Buffer.from('admin').toString('base64'))
   t.equal(c.get('_auth'), undefined)
   await c.save('user')
-  t.equal(c.get('email'), undefined)
+  t.equal(c.get('email'), 'name@example.com')
   t.equal(c.get('username'), undefined)
   t.equal(c.get('_password'), undefined)
   t.equal(c.get('_auth'), undefined)
@@ -839,7 +849,7 @@ t.test('setting username/password/email individually', async t => {
   })
   const d = new Config(opts)
   await d.load()
-  t.equal(d.get('email'), undefined)
+  t.equal(d.get('email'), 'name@example.com')
   t.equal(d.get('username'), undefined)
   t.equal(d.get('_password'), undefined)
   t.equal(d.get('_auth'), undefined)
@@ -860,54 +870,62 @@ t.test('nerfdart auths set at the top level into the registry', async t => {
   const email = 'i@izs.me'
   const _authToken = 'deadbeefblahblah'
 
-  // TODO(isaacs): We should NOT be requiring that email be nerfdarted.
-  // It's not particularly secret, and is only included in the "credentials"
-  // concept as an accident of history, because the old couchdb reg used it.
-  // It should be treated just like any other plain old config field.
-
   // name: [ini, expect]
   const cases = {
-    // TODO: should not require email
-    // '_auth only, no email': [ `_auth=${_auth}`, {
-    //   '//registry.npmjs.org/:username': username,
-    //   '//registry.npmjs.org/:_password': _password,
-    // }],
+    '_auth only, no email': [ `_auth=${_auth}`, {
+      '//registry.npmjs.org/:username': username,
+      '//registry.npmjs.org/:_password': _password,
+    }],
     '_auth with email': [ `_auth=${_auth}\nemail=${email}`, {
       '//registry.npmjs.org/:username': username,
       '//registry.npmjs.org/:_password': _password,
-      // TODO: change to just 'email': email
-      '//registry.npmjs.org/:email': email,
+      email,
     }],
     '_authToken alone': [ `_authToken=${_authToken}`, {
       '//registry.npmjs.org/:_authToken': _authToken,
     }],
     '_authToken and email': [ `_authToken=${_authToken}\nemail=${email}`, {
       '//registry.npmjs.org/:_authToken': _authToken,
-      // TODO: should include (un-nerf-darted) email
-      // email,
+      email,
     }],
-    // TODO: should not require email
-    // 'username and _password': [ `username=${username}\n_password=${_password}`, {
-    //   '//registry.npmjs.org/:username': username,
-    //   '//registry.npmjs.org/:_password': _password,
-    // }],
+    'username and _password': [ `username=${username}\n_password=${_password}`, {
+      '//registry.npmjs.org/:username': username,
+      '//registry.npmjs.org/:_password': _password,
+    }],
     'username, password, email': [ `username=${username}\n_password=${_password}\nemail=${email}`, {
       '//registry.npmjs.org/:username': username,
       '//registry.npmjs.org/:_password': _password,
-      '//registry.npmjs.org/:email': 'i@izs.me',
+      email,
     }],
-    // handled invalid cases
+    // handled invalid/legacy cases
     'username, no _password': [`username=${username}`, {}],
     '_password, no username': [`_password=${_password}`, {}],
+    // de-nerfdart the email, if present in that way
+    'nerf-darted email': [`//registry.npmjs.org/:email=${email}`, {
+      email,
+    }],
   }
 
+  const cwd = process.cwd()
   for (const [name, [ini, expect]] of Object.entries(cases)) {
-    //console.log({name, ini, expect})
     t.test(name, async t => {
-      const path = t.testdir({ '.npmrc': ini })
+      t.teardown(() => process.chdir(cwd))
+      const path = t.testdir({
+        '.npmrc': ini,
+        'package.json': JSON.stringify({}),
+      })
+      process.chdir(path)
+      const argv = [
+        'node',
+        __filename,
+        `--prefix=${path}`,
+        `--userconfig=${path}/.npmrc`,
+        `--globalconfig=${path}/etc/npmrc`,
+      ]
       const opts = {
         shorthands: {},
-        argv: ['node', __filename, `--userconfig=${path}/.npmrc`, `--globalconfig=${path}/npmrc`],
+        argv,
+        env: {},
         definitions: {
           registry: { default: registry },
         },
