@@ -618,7 +618,6 @@ always-auth = true`,
           password: 'bar',
           email: 'asdf@quux.com',
         })
-        t.equal(c.getCredentialsByURI('http://x.com').alwaysAuth, false)
       }
 
       const d = c.getCredentialsByURI(defReg)
@@ -629,9 +628,8 @@ always-auth = true`,
 
       c.clearCredentialsByURI(defReg)
       const defAfterDelete = c.getCredentialsByURI(defReg)
-      // we keep alwaysAuth, and MAY have email there, but nothing else.
       {
-        const expectKeys = ['alwaysAuth']
+        const expectKeys = []
         if (defAfterDelete.email)
           expectKeys.push('email')
         t.strictSame(Object.keys(defAfterDelete), expectKeys)
@@ -640,7 +638,7 @@ always-auth = true`,
       c.clearCredentialsByURI(otherReg)
       const otherAfterDelete = c.getCredentialsByURI(otherReg)
       {
-        const expectKeys = ['alwaysAuth']
+        const expectKeys = []
         if (otherAfterDelete.email)
           expectKeys.push('email')
         t.strictSame(Object.keys(otherAfterDelete), expectKeys)
@@ -786,7 +784,6 @@ t.test('setting basic auth creds and email', async t => {
     argv: ['node', __filename, `--userconfig=${path}/.npmrc`],
     definitions: {
       registry: { default: registry },
-      'always-auth': { default: false },
     },
     npmPath: process.cwd(),
   }
@@ -796,10 +793,10 @@ t.test('setting basic auth creds and email', async t => {
   t.equal(c.get('email', 'user'), 'name@example.com', 'email was set')
   await c.save('user')
   t.equal(c.get('email', 'user'), 'name@example.com', 'email still top level')
-  t.strictSame(c.getCredentialsByURI(registry), { email: 'name@example.com', alwaysAuth: false })
+  t.strictSame(c.getCredentialsByURI(registry), { email: 'name@example.com' })
   const d = new Config(opts)
   await d.load()
-  t.strictSame(d.getCredentialsByURI(registry), { email: 'name@example.com', alwaysAuth: false })
+  t.strictSame(d.getCredentialsByURI(registry), { email: 'name@example.com' })
   d.set('_auth', _auth, 'user')
   t.equal(d.get('_auth', 'user'), _auth, '_auth was set')
   await d.save('user')
@@ -809,7 +806,6 @@ t.test('setting basic auth creds and email', async t => {
     username: 'admin',
     password: 'admin',
     auth: _auth,
-    alwaysAuth: false,
   }, 'credentials saved and nerfed')
 })
 
@@ -822,7 +818,6 @@ t.test('setting username/password/email individually', async t => {
     argv: ['node', __filename, `--userconfig=${path}/.npmrc`],
     definitions: {
       registry: { default: registry },
-      'always-auth': { default: false },
     },
     npmPath: process.cwd(),
   }
@@ -841,7 +836,6 @@ t.test('setting username/password/email individually', async t => {
   t.equal(c.get('_password'), undefined)
   t.equal(c.get('_auth'), undefined)
   t.strictSame(c.getCredentialsByURI(registry), {
-    alwaysAuth: false,
     email: 'name@example.com',
     username: 'admin',
     password: 'admin',
@@ -854,7 +848,6 @@ t.test('setting username/password/email individually', async t => {
   t.equal(d.get('_password'), undefined)
   t.equal(d.get('_auth'), undefined)
   t.strictSame(d.getCredentialsByURI(registry), {
-    alwaysAuth: false,
     email: 'name@example.com',
     username: 'admin',
     password: 'admin',
