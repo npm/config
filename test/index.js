@@ -4,7 +4,7 @@ const t = require('tap')
 const fs = require('fs')
 const { readFile, readFileSync } = fs
 fs.readFile = (path, ...args) => {
-  if (path.match(/WEIRD-ERROR/)) {
+  if (path && path.match(/WEIRD-ERROR/)) {
     const cb = args.pop()
     cb(Object.assign(new Error('weird error'), { code: 'EWEIRD' }))
   } else
@@ -362,7 +362,8 @@ loglevel = yolo
       [resolve(path, 'npm/npmrc'), 'builtin'],
       ['command line options', 'cli'],
       ['environment', 'env'],
-      ['(same as "user" config, ignored)', 'project'],
+      ['(workspace same as "user" config, ignored)', 'workspace'],
+      ['(project same as "user" config, ignored)', 'project'],
       [resolve(path, 'project/.npmrc'), 'user'],
     ]))
 
@@ -929,4 +930,213 @@ t.test('nerfdart auths set at the top level into the registry', async t => {
       t.same(c.list[3], expect)
     })
   }
+})
+
+t.test('workspace-root settings', async t => {
+  const registry = 'https://registry.npmjs.org/'
+  const fixtureDef = {
+    '.npmrc': 'userconfigfile = true',
+    project: {
+      'package.json': JSON.stringify({ workspaces: ['foo', 'bar'] }),
+      '.npmrc': 'foo = bar',
+      foo: {
+        'package.json': JSON.stringify({ name: 'foo', version: '1.2.3' }),
+        '.npmrc': 'workspace-root = ..',
+        x: { y: { z: {}}},
+      },
+      // no ws config in bar
+      bar: {
+        'package.json': JSON.stringify({ name: 'bar', version: '1.2.3' }),
+        x: { y: { z: {}}},
+      },
+    },
+  }
+
+  const opts = path => ({
+    shorthands: {},
+    argv: [],
+    env: {
+      HOME: path,
+    },
+    definitions: {
+      registry: { default: registry },
+      'workspace-root': {
+        default: undefined,
+        type: require('path'),
+      },
+      workspace: {
+        default: [],
+        type: [Array, String],
+      },
+    },
+    npmPath: process.cwd(),
+  })
+
+  t.test('works in the root of the workspace', async t => {
+    const path = t.testdir(fixtureDef)
+    const c = new Config({
+      ...opts(path),
+      cwd: resolve(path, 'project/foo'),
+    })
+    await c.load()
+    t.strictSame(c.get('workspace'), ['foo'])
+    t.strictSame(c.get('workspace-root'), resolve(path, 'project'))
+    t.equal(c.get('userconfigfile'), true)
+    t.equal(c.localPrefix, resolve(path, 'project'))
+    t.equal(c.cwd, resolve(path, 'project/foo'))
+  })
+
+  t.test('works in workspace subpath', async t => {
+    const path = t.testdir(fixtureDef)
+    const c = new Config({
+      ...opts(path),
+      cwd: resolve(path, 'project/foo/x/y/z'),
+    })
+    await c.load()
+    t.strictSame(c.get('workspace'), ['foo'])
+    t.strictSame(c.get('workspace-root'), resolve(path, 'project'))
+    t.equal(c.get('userconfigfile'), true)
+    t.equal(c.localPrefix, resolve(path, 'project'))
+    t.equal(c.cwd, resolve(path, 'project/foo/x/y/z'))
+  })
+
+  t.test('does not work without ws config file', async t => {
+    const path = t.testdir(fixtureDef)
+    const c = new Config({
+      ...opts(path),
+      cwd: resolve(path, 'project/bar'),
+    })
+    await c.load()
+    t.strictSame(c.get('workspace'), [])
+    t.strictSame(c.get('workspace-root'), undefined)
+    t.equal(c.get('userconfigfile'), true)
+    t.equal(c.localPrefix, resolve(path, 'project/bar'))
+    t.equal(c.cwd, resolve(path, 'project/bar'))
+  })
+
+  t.test('set wsconfig explicitly', async t => {
+    const path = t.testdir(fixtureDef)
+    const c = new Config({
+      ...opts(path),
+      cwd: resolve(path, 'project/bar'),
+    })
+    await c.load()
+    t.strictSame(c.get('workspace'), [])
+    t.strictSame(c.get('workspace-root'), undefined)
+    t.equal(c.get('userconfigfile'), true)
+    t.equal(c.localPrefix, resolve(path, 'project/bar'))
+    t.equal(c.cwd, resolve(path, 'project/bar'))
+    c.set('workspace-root', resolve(path, 'project'), 'project')
+    await c.save('project')
+    const file = resolve(path, 'project/bar/.npmrc')
+    t.equal(fs.readFileSync(file, 'utf8'), `workspace-root=..\n`)
+  })
+
+  t.test('refuse to save empty wsconfig', async t => {
+    const path = t.testdir(fixtureDef)
+    const c = new Config({
+      ...opts(path),
+      cwd: resolve(path, 'project/bar'),
+    })
+    await c.load()
+    t.strictSame(c.get('workspace'), [])
+    t.strictSame(c.get('workspace-root'), undefined)
+    t.equal(c.get('userconfigfile'), true)
+    t.equal(c.localPrefix, resolve(path, 'project/bar'))
+    t.equal(c.cwd, resolve(path, 'project/bar'))
+    c.set('workspace-root', resolve(path, 'project/bar'), 'project')
+    await c.save('project')
+    t.throws(() => fs.statSync(resolve(path, 'project/bar/.npmrc')), {
+      code: 'ENOENT',
+    })
+  })
+
+  t.test('saving wsroot config removes other project stuff', async t => {
+    const path = t.testdir(fixtureDef)
+    const c = new Config({
+      ...opts(path),
+      cwd: resolve(path, 'project/bar'),
+    })
+    await c.load()
+    t.strictSame(c.get('workspace'), [])
+    t.strictSame(c.get('workspace-root'), undefined)
+    t.equal(c.get('userconfigfile'), true)
+    t.equal(c.localPrefix, resolve(path, 'project/bar'))
+    t.equal(c.cwd, resolve(path, 'project/bar'))
+    c.set('workspace-root', resolve(path, 'project'), 'project')
+    c.set('other', 'thing', 'project')
+    t.throws(() => c.set('workspace-root', resolve(path, 'project'), 'global'))
+    t.throws(() => c.set('workspace-root', resolve(path, 'project'), 'user'))
+    await t.rejects(c.save('project'), {
+      message: 'Cannot set other configs with workspace-root',
+    })
+    c.delete('other', 'project')
+    await c.save('project')
+    t.equal(fs.readFileSync(resolve(path, 'project/bar/.npmrc'), 'utf8'),
+      `workspace-root=..\n`)
+  })
+
+  t.test('set wsroot with explicit cli config', async t => {
+    const path = t.testdir(fixtureDef)
+    const c = new Config({
+      ...opts(path),
+      argv: [process.execPath, __filename, `--workspace-root=${path}/project`],
+      cwd: resolve(path, 'project/bar'),
+    })
+    await c.load()
+    t.strictSame(c.get('workspace'), ['bar'])
+    t.strictSame(c.get('workspace-root'), resolve(path, 'project'))
+    t.equal(c.get('userconfigfile'), true)
+    t.equal(c.localPrefix, resolve(path, 'project'))
+    t.equal(c.cwd, resolve(path, 'project/bar'))
+  })
+
+  t.test('set wsroot to current project with explicit cli config', async t => {
+    const path = t.testdir(fixtureDef)
+    const c = new Config({
+      ...opts(path),
+      argv: [process.execPath, __filename, `--workspace-root=${path}/project/bar`],
+      cwd: resolve(path, 'project/bar'),
+    })
+    await c.load()
+    t.strictSame(c.get('workspace'), [])
+    t.strictSame(c.get('workspace-root'), resolve(path, 'project/bar'))
+    t.equal(c.get('userconfigfile'), true)
+    t.equal(c.localPrefix, resolve(path, 'project/bar'))
+    t.equal(c.cwd, resolve(path, 'project/bar'))
+  })
+
+  t.test('warn if wsroot set along with other configs', async t => {
+    const path = t.testdir({
+      ...fixtureDef,
+      project: {
+        ...fixtureDef.project,
+        foo: {
+          ...fixtureDef.project.foo,
+          '.npmrc': 'workspace-root = ..\nfoo-ws-conf = true\n',
+        },
+      },
+    })
+    const logs = []
+    const log = {
+      warn: (...msg) => logs.push(['warn', ...msg]),
+      verbose: (...msg) => logs.push(['verbose', ...msg]),
+    }
+    const c = new Config({
+      ...opts(path),
+      log,
+      cwd: resolve(path, 'project/foo'),
+    })
+    await c.load()
+    t.strictSame(logs, [
+      [
+        'warn',
+        'config',
+        'workspace-root set, ignoring other workspace-level configs',
+        [
+          'foo-ws-conf',
+        ],
+      ],
+    ])
+  })
 })
