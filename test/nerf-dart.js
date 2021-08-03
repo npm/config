@@ -35,9 +35,8 @@ const cases = [
 for (const [dart, tests] of cases) {
   t.test(dart, t => {
     t.plan(tests.length)
-    for (const url of tests) {
+    for (const url of tests)
       t.equal(nerfDart(url), dart, url)
-    }
   })
 }
 

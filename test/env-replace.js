@@ -6,8 +6,8 @@ const env = {
   bar: 'baz',
 }
 
-t.equal(envReplace('\\${foo}', env),  '${foo}')
-t.equal(envReplace('\\\\${foo}', env),  '\\bar')
+t.equal(envReplace('\\${foo}', env), '${foo}')
+t.equal(envReplace('\\\\${foo}', env), '\\bar')
 t.equal(envReplace('${baz}', env), '${baz}')
 t.equal(envReplace('\\${baz}', env), '${baz}')
 t.equal(envReplace('\\\\${baz}', env), '\\${baz}')

@@ -13,6 +13,11 @@
   "author": "Isaac Z. Schlueter <i@izs.me> (https://izs.me)",
   "license": "ISC",
   "scripts": {
+    "npmclilint": "npmcli-lint",
+    "lint": "npm run npmclilint -- \"*.*js\" \"lib/**/*.*js\" \"test/**/*.*js\"",
+    "lintfix": "npm run lint -- --fix",
+    "posttest": "npm run lint --",
+    "postsnap": "npm run lintfix --",
     "test": "tap",
     "snap": "tap",
     "preversion": "npm test",
@@ -24,9 +29,10 @@
     "coverage-map": "map.js"
   },
   "devDependencies": {
-    "tap": "^15.0.4"
+    "tap": "^15.0.9"
   },
   "dependencies": {
+    "@npmcli/lint": "^1.0.1",
     "ini": "^2.0.0",
     "mkdirp-infer-owner": "^2.0.0",
     "nopt": "^5.0.0",

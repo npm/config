@@ -147,5 +147,5 @@ module.exports = {
   'tag-version-prefix': String,
   versions: Boolean,
   viewer: String,
-  _exit: Boolean
+  _exit: Boolean,
 }

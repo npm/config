@@ -6,7 +6,7 @@ const {
   },
   path: {
     validate: validatePath,
-  }
+  },
 } = typeDefs
 const { resolve } = require('path')
 
