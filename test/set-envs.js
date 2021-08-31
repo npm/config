@@ -1,10 +1,13 @@
 const setEnvs = require('../lib/set-envs.js')
 
+const { join } = require('path')
 const t = require('tap')
 const defaults = require('./fixtures/defaults.js')
 const definitions = require('./fixtures/definitions.js')
 const { execPath } = process
 const cwd = process.cwd()
+const globalPrefix = join(cwd, 'global')
+const localPrefix = join(cwd, 'local')
 const NODE = execPath
 
 t.test('set envs that are not defaults and not already in env', t => {
@@ -17,6 +20,8 @@ t.test('set envs that are not defaults and not already in env', t => {
     HOME: undefined,
     npm_execpath: require.main.filename,
     npm_node_execpath: execPath,
+    npm_config_global_prefix: globalPrefix,
+    npm_config_local_prefix: localPrefix,
   }
 
   const env = {}
@@ -26,6 +31,8 @@ t.test('set envs that are not defaults and not already in env', t => {
     defaults,
     definitions,
     execPath,
+    globalPrefix,
+    localPrefix,
   }
 
   setEnvs(config)
@@ -63,6 +70,8 @@ t.test('set envs that are not defaults and not already in env, array style', t =
     HOME: undefined,
     npm_execpath: require.main.filename,
     npm_node_execpath: execPath,
+    npm_config_global_prefix: globalPrefix,
+    npm_config_local_prefix: localPrefix,
   }
   // make sure it's not sticky
   const env = { INIT_CWD: '/some/other/path' }
@@ -72,6 +81,8 @@ t.test('set envs that are not defaults and not already in env, array style', t =
     defaults,
     definitions,
     execPath,
+    globalPrefix,
+    localPrefix,
   }
   setEnvs(config)
   t.strictSame(env, { ...extras }, 'no new environment vars to create')
@@ -106,6 +117,8 @@ t.test('set envs that are not defaults and not already in env, boolean edition',
     HOME: undefined,
     npm_execpath: require.main.filename,
     npm_node_execpath: execPath,
+    npm_config_global_prefix: globalPrefix,
+    npm_config_local_prefix: localPrefix,
   }
 
   const env = {}
@@ -115,6 +128,8 @@ t.test('set envs that are not defaults and not already in env, boolean edition',
     defaults,
     definitions,
     execPath,
+    globalPrefix,
+    localPrefix,
   }
   setEnvs(config)
   t.strictSame(env, { ...extras }, 'no new environment vars to create')
@@ -155,8 +170,9 @@ t.test('dont set npm_execpath if require.main.filename is not set', t => {
     env,
     defaults: d,
     definitions,
-    globalPrefix: '/some/dest/usr/local',
     execPath,
+    globalPrefix,
+    localPrefix,
   }
   setEnvs(config)
   t.equal(env.npm_execpath, undefined, 'did not set npm_execpath')
@@ -173,6 +189,8 @@ t.test('dont set configs marked as envExport:false', t => {
     HOME: undefined,
     npm_execpath: require.main.filename,
     npm_node_execpath: execPath,
+    npm_config_global_prefix: globalPrefix,
+    npm_config_local_prefix: localPrefix,
   }
 
   const env = {}
@@ -182,6 +200,8 @@ t.test('dont set configs marked as envExport:false', t => {
     defaults,
     definitions,
     execPath,
+    globalPrefix,
+    localPrefix,
   }
   setEnvs(config)
   t.strictSame(env, { ...extras }, 'no new environment vars to create')
