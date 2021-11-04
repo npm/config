@@ -174,6 +174,38 @@ loglevel = yolo
     })
   })
 
+  t.test('dont load project config if global is true', async t => {
+    const config = new Config({
+      npmPath: `${path}/npm`,
+      env: {},
+      argv: [process.execPath, __filename, '--global'],
+      cwd: `${path}/project`,
+      shorthands,
+      definitions,
+    })
+
+    await config.load()
+    const source = config.data.get('project').source
+    t.equal(source, '(global mode enabled, ignored)', 'data has placeholder')
+    t.equal(config.sources.get(source), 'project', 'sources has project')
+  })
+
+  t.test('dont load project config if location is global', async t => {
+    const config = new Config({
+      npmPath: `${path}/npm`,
+      env: {},
+      argv: [process.execPath, __filename, '--location', 'global'],
+      cwd: `${path}/project`,
+      shorthands,
+      definitions,
+    })
+
+    await config.load()
+    const source = config.data.get('project').source
+    t.equal(source, '(global mode enabled, ignored)', 'data has placeholder')
+    t.equal(config.sources.get(source), 'project', 'sources has project')
+  })
+
   t.test('verbose log if config file read is weird error', async t => {
     const config = new Config({
       npmPath: path,

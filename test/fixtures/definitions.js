@@ -985,6 +985,14 @@ const definitions = module.exports = {
     },
     defaultDescription: 'null',
   },
+  location: {
+    key: 'location',
+    default: 'user',
+    type: ['global', 'user', 'project'],
+    description: '\n    When passed to \`npm config\` this refers to which config file to use.',
+    defaultDescription: '\n    "user" unless \`--global\` is passed, which will also set this value to "global"',
+    typeDescription: '"global", "user", or "project"',
+  },
   loglevel: {
     key: 'loglevel',
     default: 'notice',
