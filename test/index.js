@@ -204,6 +204,7 @@ loglevel = yolo
     const source = config.data.get('project').source
     t.equal(source, '(global mode enabled, ignored)', 'data has placeholder')
     t.equal(config.sources.get(source), 'project', 'sources has project')
+    t.ok(config.localPrefix, 'localPrefix is set')
   })
 
   t.test('verbose log if config file read is weird error', async t => {
