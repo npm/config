@@ -220,11 +220,11 @@ Note that it's usually enough (and more efficient) to just check
 
 ### `config.isDefault(key)`
 
-Returns `true` if the value is coming directly from the source defined
-in the default definitions, if the current value for the key config is
+Returns `true` if the value is coming directly from the
+default definitions, if the current value for the key config is
 coming from any other source, returns `false`.
 
-Can be useful for avoiding or tweaking default values, e.g:
+This method can be used for avoiding or tweaking default values, e.g:
 
 >  Given a global default definition of foo='foo' it's possible to read that
 >  value such as:
