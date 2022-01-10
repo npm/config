@@ -218,6 +218,29 @@ Note that it's usually enough (and more efficient) to just check
 `config.valid`, since each data object is marked for re-evaluation on every
 `config.set()` operation.
 
+### `config.isDefault(key)`
+
+Returns `true` if the value is coming directly from the source defined
+in the default definitions, if the current value for the key config is
+coming from any other source, returns `false`.
+
+Can be useful for avoiding or tweaking default values, e.g:
+
+>  Given a global default definition of foo='foo' it's possible to read that
+>  value such as:
+>
+>  ```js
+>     const save = config.get('foo')
+>  ```
+>
+>  Now in a different place of your app it's possible to avoid using the `foo`
+>  default value, by checking to see if the current config value is currently
+>  one that was defined by the default definitions:
+>
+>  ```js
+>     const save = config.isDefault('foo') ? 'bar' : config.get('foo')
+>  ```
+
 ### `config.save(where)`
 
 Save the config file specified by the `where` param.  Must be one of
