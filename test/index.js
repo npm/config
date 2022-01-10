@@ -362,6 +362,33 @@ loglevel = yolo
     ])
     t.equal(config.valid, false)
     logs.length = 0
+
+    // set a new value that defaults to cli source
+    config.set('cli-config', 1)
+
+    t.ok(config.isDefault('methane'),
+      'should return true if value is retrieved from default definitions')
+    t.notOk(config.isDefault('cli-config'),
+      'should return false for a cli-defined value')
+    t.notOk(config.isDefault('foo'),
+      'should return false for a env-defined value')
+    t.notOk(config.isDefault('project-config'),
+      'should return false for a project-defined value')
+    t.notOk(config.isDefault('default-user-config-in-home'),
+      'should return false for a user-defined value')
+    t.notOk(config.isDefault('global-config'),
+      'should return false for a global-defined value')
+    t.notOk(config.isDefault('builtin-config'),
+      'should return false for a builtin-defined value')
+
+    // make sure isDefault still works as intended after
+    // setting and deleting values in differente sources
+    config.set('methane', 'H2O', 'cli')
+    t.notOk(config.isDefault('methane'),
+      'should no longer return true now that a cli value was defined')
+    config.delete('methane', 'cli')
+    t.ok(config.isDefault('methane'),
+      'should return true once again now that values is retrieved from defaults')
   })
 
   t.test('do not double-load project/user config', async t => {
