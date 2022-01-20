@@ -139,6 +139,7 @@ loglevel = yolo
 
   const logs = []
   const log = {
+    info: (...msg) => logs.push(['info', ...msg]),
     warn: (...msg) => logs.push(['warn', ...msg]),
     verbose: (...msg) => logs.push(['verbose', ...msg]),
   }
@@ -989,4 +990,180 @@ t.test('nerfdart auths set at the top level into the registry', async t => {
       t.same(c.list[3], expect)
     })
   }
+})
+
+t.test('workspaces', async (t) => {
+  const path = resolve(t.testdir({
+    'package.json': JSON.stringify({
+      name: 'root',
+      version: '1.0.0',
+      workspaces: ['./workspaces/*'],
+    }),
+    workspaces: {
+      one: {
+        'package.json': JSON.stringify({
+          name: 'one',
+          version: '1.0.0',
+        }),
+      },
+      two: {
+        'package.json': JSON.stringify({
+          name: 'two',
+          version: '1.0.0',
+        }),
+      },
+      three: {
+        'package.json': JSON.stringify({
+          name: 'three',
+          version: '1.0.0',
+        }),
+        '.npmrc': 'package-lock=false',
+      },
+    },
+  }))
+
+  const logs = []
+  const log = {
+    info: (...msg) => logs.push(['info', ...msg]),
+    warn: (...msg) => logs.push(['warn', ...msg]),
+    verbose: (...msg) => logs.push(['verbose', ...msg]),
+  }
+  t.afterEach(() => logs.length = 0)
+
+  t.test('finds own parent', async (t) => {
+    const cwd = process.cwd()
+    t.teardown(() => process.chdir(cwd))
+    process.chdir(`${path}/workspaces/one`)
+
+    const config = new Config({
+      npmPath: cwd,
+      env: {},
+      argv: [process.execPath, __filename],
+      cwd: `${path}/workspaces/one`,
+      shorthands,
+      definitions,
+      log,
+    })
+
+    await config.load()
+    t.equal(config.localPrefix, path, 'localPrefix is the root')
+    t.same(config.get('workspace'), [join(path, 'workspaces', 'one')], 'set the workspace')
+    t.equal(logs.length, 1, 'got one log message')
+    t.match(logs[0], ['info', /^found workspace root at/], 'logged info about workspace root')
+  })
+
+  t.test('finds other workspace parent', async (t) => {
+    const cwd = process.cwd()
+    t.teardown(() => process.chdir(cwd))
+    process.chdir(`${path}/workspaces/one`)
+
+    const config = new Config({
+      npmPath: process.cwd(),
+      env: {},
+      argv: [process.execPath, __filename, '--workspace', '../two'],
+      cwd: `${path}/workspaces/one`,
+      shorthands,
+      definitions,
+      log,
+    })
+
+    await config.load()
+    t.equal(config.localPrefix, path, 'localPrefix is the root')
+    t.same(config.get('workspace'), ['../two'], 'kept the specified workspace')
+    t.equal(logs.length, 1, 'got one log message')
+    t.match(logs[0], ['info', /^found workspace root at/], 'logged info about workspace root')
+  })
+
+  t.test('warns when workspace has .npmrc', async (t) => {
+    const cwd = process.cwd()
+    t.teardown(() => process.chdir(cwd))
+    process.chdir(`${path}/workspaces/three`)
+
+    const config = new Config({
+      npmPath: process.cwd(),
+      env: {},
+      argv: [process.execPath, __filename],
+      cwd: `${path}/workspaces/three`,
+      shorthands,
+      definitions,
+      log,
+    })
+
+    await config.load()
+    t.equal(config.localPrefix, path, 'localPrefix is the root')
+    t.same(config.get('workspace'), [join(path, 'workspaces', 'three')], 'kept the specified workspace')
+    t.equal(logs.length, 2, 'got two log messages')
+    t.match(logs[0], ['warn', /^ignoring workspace config/], 'warned about ignored workspace config')
+    t.match(logs[1], ['info', /^found workspace root at/], 'logged info about workspace root')
+  })
+
+  t.test('prefix skips auto detect', async (t) => {
+    const cwd = process.cwd()
+    t.teardown(() => process.chdir(cwd))
+    process.chdir(`${path}/workspaces/one`)
+
+    const config = new Config({
+      npmPath: process.cwd(),
+      env: {},
+      argv: [process.execPath, __filename, '--prefix', './'],
+      cwd: `${path}/workspaces/one`,
+      shorthands,
+      definitions,
+      log,
+    })
+
+    await config.load()
+    t.equal(config.localPrefix, join(path, 'workspaces', 'one'), 'localPrefix is the root')
+    t.same(config.get('workspace'), [], 'did not set workspace')
+    t.equal(logs.length, 0, 'got no log messages')
+  })
+
+  t.test('no-workspaces skips auto detect', async (t) => {
+    const cwd = process.cwd()
+    t.teardown(() => process.chdir(cwd))
+    process.chdir(`${path}/workspaces/one`)
+
+    const config = new Config({
+      npmPath: process.cwd(),
+      env: {},
+      argv: [process.execPath, __filename, '--no-workspaces'],
+      cwd: `${path}/workspaces/one`,
+      shorthands,
+      definitions,
+      log,
+    })
+
+    await config.load()
+    t.equal(config.localPrefix, join(path, 'workspaces', 'one'), 'localPrefix is the root')
+    t.same(config.get('workspace'), [], 'did not set workspace')
+    t.equal(logs.length, 0, 'got no log messages')
+  })
+
+  t.test('does not error for invalid package.json', async (t) => {
+    const invalidPkg = join(path, 'workspaces', 'package.json')
+    const cwd = process.cwd()
+    t.teardown(() => {
+      fs.unlinkSync(invalidPkg)
+      process.chdir(cwd)
+    })
+    process.chdir(`${path}/workspaces/one`)
+
+    // write some garbage to the file so read-package-json-fast will throw
+    fs.writeFileSync(invalidPkg, 'not-json')
+    const config = new Config({
+      npmPath: cwd,
+      env: {},
+      argv: [process.execPath, __filename],
+      cwd: `${path}/workspaces/one`,
+      shorthands,
+      definitions,
+      log,
+    })
+
+    await config.load()
+    t.equal(config.localPrefix, path, 'localPrefix is the root')
+    t.same(config.get('workspace'), [join(path, 'workspaces', 'one')], 'set the workspace')
+    t.equal(logs.length, 1, 'got one log message')
+    t.match(logs[0], ['info', /^found workspace root at/], 'logged info about workspace root')
+  })
 })

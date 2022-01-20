@@ -1820,6 +1820,19 @@ const definitions = module.exports = {
     description: '\n    The program to use to view help content.\n\n    Set to `"browser"` to view html help content in the default web browser.\n  ',
     typeDescription: 'String',
   },
+  workspace: {
+    key: 'workspace',
+    default: [],
+    type: [String, Array],
+    short: 'w',
+    envExport: false,
+    description: '\n    Enable running a command in the context of the configured workspaces of the\n    current project while filtering by running only the workspaces defined by\n    this configuration option.\n\n    Valid values for the `workspace` config are either:\n\n    * Workspace names\n    * Path to a workspace directory\n    * Path to a parent workspace directory (will result in selecting all\n      workspaces within that folder)\n\n    When set for the `npm init` command, this may be set to the folder of\n    a workspace which does not yet exist, to create the folder and set it\n    up as a brand new workspace within the project.\n',
+    defaultDescription: '',
+    typeDescription: 'String (can be set multiple times)',
+    flatten: (key, obj, flatOptions) => {
+      definitions['user-agent'].flatten('user-agent', obj, flatOptions)
+    },
+  },
   yes: {
     key: 'yes',
     default: false,
