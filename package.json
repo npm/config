@@ -27,9 +27,11 @@
     "tap": "^15.0.4"
   },
   "dependencies": {
+    "@npmcli/map-workspaces": "^2.0.0",
     "ini": "^2.0.0",
     "mkdirp-infer-owner": "^2.0.0",
     "nopt": "^5.0.0",
+    "read-package-json-fast": "^2.0.3",
     "semver": "^7.3.4",
     "walk-up-path": "^1.0.0"
   },
