@@ -7,14 +7,16 @@ fs.readFile = (path, ...args) => {
   if (path.match(/WEIRD-ERROR/)) {
     const cb = args.pop()
     cb(Object.assign(new Error('weird error'), { code: 'EWEIRD' }))
-  } else
+  } else {
     return readFile(path, ...args)
+  }
 }
 fs.readFileSync = (path, ...args) => {
   if (path.match(/WEIRD-ERROR/)) {
     throw Object.assign(new Error('weird error'), { code: 'EWEIRD' })
-  } else
+  } else {
     return readFileSync(path, ...args)
+  }
 }
 
 // when running with `npm test` it adds environment variables that
@@ -44,7 +46,7 @@ t.test('construct with no settings, get default values for stuff', t => {
   })
 
   t.test('default some values from process object', t => {
-    const { env, argv, execPath, platform } = process
+    const { env, execPath, platform } = process
     const cwd = process.cwd()
     t.equal(c.env, env, 'env')
     t.equal(c.execPath, execPath, 'execPath')
@@ -101,7 +103,7 @@ t.test('load from files and environment variables', t => {
 builtin-config = true
 foo = from-builtin
 userconfig = ${path}/user/.npmrc-from-builtin
-`
+`,
     },
     global: {
       etc: {
@@ -109,7 +111,7 @@ userconfig = ${path}/user/.npmrc-from-builtin
 global-config = true
 foo = from-global
 userconfig = ${path}/should-not-load-this-file
-`
+`,
       },
     },
     user: {
@@ -122,7 +124,7 @@ prefix = ${path}/global
 user-config-from-builtin = true
 foo = from-custom-userconfig
 globalconfig = ${path}/global/etc/npmrc
-`
+`,
     },
     project: {
       node_modules: {},
@@ -130,7 +132,7 @@ globalconfig = ${path}/global/etc/npmrc
 project-config = true
 foo = from-project-config
 loglevel = yolo
-`
+`,
     },
     'project-no-config': {
       'package.json': '{"name":"@scope/project"}',
@@ -171,7 +173,8 @@ loglevel = yolo
       definitions,
     })
     await t.rejects(() => config.load(), {
-      message: `double-loading config "${resolve(path, 'npm/npmrc')}" as "user", previously loaded as "builtin"`,
+      message: `double-loading config "${resolve(path, 'npm/npmrc')}" as "user",` +
+       ' previously loaded as "builtin"',
     })
   })
 
@@ -220,7 +223,7 @@ loglevel = yolo
     })
     logs.length = 0
     await config.load()
-    t.match(logs, [[ 'verbose','config', 'error loading user config', {
+    t.match(logs, [['verbose', 'config', 'error loading user config', {
       message: 'weird error',
     }]])
     logs.length = 0
@@ -247,7 +250,7 @@ loglevel = yolo
 
     await config.load()
 
-    t.equal(config.globalPrefix, resolve('/something'), 'env-defined prefix should have been loaded')
+    t.equal(config.globalPrefix, resolve('/something'), 'env-defined prefix should be loaded')
 
     t.equal(config.get('global', 'env'), undefined, 'empty env is missing')
     t.equal(config.get('global'), false, 'empty env is missing')
@@ -271,10 +274,12 @@ loglevel = yolo
     config.argv = []
 
     t.throws(() => config.loadCLI(), {
-      message: 'double-loading "cli" configs from command line options, previously loaded from command line options'
+      message: 'double-loading "cli" configs from command line options, previously loaded from' +
+      ' command line options',
     })
     t.rejects(() => config.loadUserConfig(), {
-      message: `double-loading "user" configs from ${resolve(path, 'should-not-load-this-file')}, previously loaded from ${resolve(path, 'user/.npmrc-from-builtin')}`
+      message: `double-loading "user" configs from ${resolve(path, 'should-not-load-this-file')}` +
+      `, previously loaded from ${resolve(path, 'user/.npmrc-from-builtin')}`,
     })
 
     t.equal(config.loaded, true, 'config is loaded')
@@ -341,24 +346,25 @@ loglevel = yolo
     }, 'set env values')
 
     t.strictSame(logs, [
-      [ 'warn', 'invalid config', 'registry="hello"', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be', 'full url with "http://"' ],
-      [ 'warn', 'invalid config', 'omit="cucumber"', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be one or more of:', 'dev, optional, peer' ],
-      [ 'warn', 'invalid config', 'access="blueberry"', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be one of:', 'null, restricted, public' ],
-      [ 'warn', 'invalid config', 'multiple-numbers="what kind of fruit is not a number"', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be one or more', 'numeric value' ],
-      [ 'warn', 'invalid config', 'multiple-numbers="a baNaNa!!"', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be one or more', 'numeric value' ],
-      [ 'warn', 'invalid config', 'prefix=true', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be', 'valid filesystem path' ],
-      [ 'verbose', 'config', 'also', 'Please use --include=dev instead.' ],
-      [ 'warn', 'invalid config', 'loglevel="yolo"',
+      ['warn', 'invalid config', 'registry="hello"', 'set in command line options'],
+      ['warn', 'invalid config', 'Must be', 'full url with "http://"'],
+      ['warn', 'invalid config', 'omit="cucumber"', 'set in command line options'],
+      ['warn', 'invalid config', 'Must be one or more of:', 'dev, optional, peer'],
+      ['warn', 'invalid config', 'access="blueberry"', 'set in command line options'],
+      ['warn', 'invalid config', 'Must be one of:', 'null, restricted, public'],
+      ['warn', 'invalid config', 'multiple-numbers="what kind of fruit is not a number"',
+        'set in command line options'],
+      ['warn', 'invalid config', 'Must be one or more', 'numeric value'],
+      ['warn', 'invalid config', 'multiple-numbers="a baNaNa!!"', 'set in command line options'],
+      ['warn', 'invalid config', 'Must be one or more', 'numeric value'],
+      ['warn', 'invalid config', 'prefix=true', 'set in command line options'],
+      ['warn', 'invalid config', 'Must be', 'valid filesystem path'],
+      ['verbose', 'config', 'also', 'Please use --include=dev instead.'],
+      ['warn', 'invalid config', 'loglevel="yolo"',
         `set in ${resolve(path, 'project/.npmrc')}`],
-      [ 'warn', 'invalid config', 'Must be one of:',
-        [ 'silent',  'error', 'warn', 'notice', 'http', 'timing', 'info',
-          'verbose', 'silly' ].join(', '),
+      ['warn', 'invalid config', 'Must be one of:',
+        ['silent', 'error', 'warn', 'notice', 'http', 'timing', 'info',
+          'verbose', 'silly'].join(', '),
       ],
     ])
     t.equal(config.valid, false)
@@ -491,19 +497,20 @@ loglevel = yolo
     })
 
     t.strictSame(logs, [
-      [ 'warn', 'invalid config', 'registry="hello"', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be', 'full url with "http://"' ],
-      [ 'warn', 'invalid config', 'omit="cucumber"', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be one or more of:', 'dev, optional, peer' ],
-      [ 'warn', 'invalid config', 'access="blueberry"', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be one of:', 'null, restricted, public' ],
-      [ 'warn', 'invalid config', 'multiple-numbers="what kind of fruit is not a number"', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be one or more', 'numeric value' ],
-      [ 'warn', 'invalid config', 'multiple-numbers="a baNaNa!!"', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be one or more', 'numeric value' ],
-      [ 'warn', 'invalid config', 'prefix=true', 'set in command line options' ],
-      [ 'warn', 'invalid config', 'Must be', 'valid filesystem path' ],
-      [ 'verbose', 'config', 'also', 'Please use --include=dev instead.' ],
+      ['warn', 'invalid config', 'registry="hello"', 'set in command line options'],
+      ['warn', 'invalid config', 'Must be', 'full url with "http://"'],
+      ['warn', 'invalid config', 'omit="cucumber"', 'set in command line options'],
+      ['warn', 'invalid config', 'Must be one or more of:', 'dev, optional, peer'],
+      ['warn', 'invalid config', 'access="blueberry"', 'set in command line options'],
+      ['warn', 'invalid config', 'Must be one of:', 'null, restricted, public'],
+      ['warn', 'invalid config', 'multiple-numbers="what kind of fruit is not a number"',
+        'set in command line options'],
+      ['warn', 'invalid config', 'Must be one or more', 'numeric value'],
+      ['warn', 'invalid config', 'multiple-numbers="a baNaNa!!"', 'set in command line options'],
+      ['warn', 'invalid config', 'Must be one or more', 'numeric value'],
+      ['warn', 'invalid config', 'prefix=true', 'set in command line options'],
+      ['warn', 'invalid config', 'Must be', 'valid filesystem path'],
+      ['verbose', 'config', 'also', 'Please use --include=dev instead.'],
     ])
   })
 
@@ -533,7 +540,8 @@ _authToken = deadbeefcafebadfoobarbaz42069
   const { flat } = config
   t.equal(config.flat, flat, 'getter returns same value again')
   const ca = flat.ca
-  t.equal(ca.join('\n').replace(/\r\n/g, '\n').trim(), readFileSync(cafile, 'utf8').replace(/\r\n/g, '\n').trim())
+  t.equal(ca.join('\n').replace(/\r\n/g, '\n').trim(), readFileSync(cafile, 'utf8')
+    .replace(/\r\n/g, '\n').trim())
   await config.save('user')
   const res = readFileSync(`${dir}/.npmrc`, 'utf8').replace(/\r\n/g, '\n')
   t.equal(res, expect, 'did not write back ca, only cafile')
@@ -691,8 +699,9 @@ always-auth = true`,
       const defAfterDelete = c.getCredentialsByURI(defReg)
       {
         const expectKeys = []
-        if (defAfterDelete.email)
+        if (defAfterDelete.email) {
           expectKeys.push('email')
+        }
         t.strictSame(Object.keys(defAfterDelete), expectKeys)
       }
 
@@ -700,22 +709,23 @@ always-auth = true`,
       const otherAfterDelete = c.getCredentialsByURI(otherReg)
       {
         const expectKeys = []
-        if (otherAfterDelete.email)
+        if (otherAfterDelete.email) {
           expectKeys.push('email')
+        }
         t.strictSame(Object.keys(otherAfterDelete), expectKeys)
       }
 
       // need both or none of user/pass
-      if (!d.token && (!d.username || !d.password))
+      if (!d.token && (!d.username || !d.password)) {
         t.throws(() => c.setCredentialsByURI(defReg, d))
-      else {
+      } else {
         c.setCredentialsByURI(defReg, d)
         t.matchSnapshot(c.getCredentialsByURI(defReg), 'default registry after set')
       }
 
-      if (!o.token && (!o.username || !o.password))
+      if (!o.token && (!o.username || !o.password)) {
         t.throws(() => c.setCredentialsByURI(otherReg, o), {}, { otherReg, o })
-      else {
+      } else {
         c.setCredentialsByURI(otherReg, o)
         t.matchSnapshot(c.getCredentialsByURI(otherReg), 'other registry after set')
       }
@@ -729,7 +739,7 @@ t.test('finding the global prefix', t => {
   t.test('load from PREFIX env', t => {
     const c = new Config({
       env: {
-        PREFIX: '/prefix/env'
+        PREFIX: '/prefix/env',
       },
       shorthands,
       definitions,
@@ -786,11 +796,11 @@ t.test('finding the local prefix', t => {
   const path = t.testdir({
     hasNM: {
       node_modules: {},
-      x: { y: { z: {}}},
+      x: { y: { z: {} } },
     },
     hasPJ: {
       'package.json': '{}',
-      x: { y: { z: {}}},
+      x: { y: { z: {} } },
     },
   })
   t.test('explicit cli prefix', async t => {
@@ -873,7 +883,6 @@ t.test('setting basic auth creds and email', async t => {
 t.test('setting username/password/email individually', async t => {
   const registry = 'https://registry.npmjs.org/'
   const path = t.testdir()
-  const _auth = Buffer.from('admin:admin').toString('base64')
   const opts = {
     shorthands: {},
     argv: ['node', __filename, `--userconfig=${path}/.npmrc`],
@@ -926,27 +935,27 @@ t.test('nerfdart auths set at the top level into the registry', async t => {
 
   // name: [ini, expect]
   const cases = {
-    '_auth only, no email': [ `_auth=${_auth}`, {
+    '_auth only, no email': [`_auth=${_auth}`, {
       '//registry.npmjs.org/:username': username,
       '//registry.npmjs.org/:_password': _password,
     }],
-    '_auth with email': [ `_auth=${_auth}\nemail=${email}`, {
+    '_auth with email': [`_auth=${_auth}\nemail=${email}`, {
       '//registry.npmjs.org/:username': username,
       '//registry.npmjs.org/:_password': _password,
       email,
     }],
-    '_authToken alone': [ `_authToken=${_authToken}`, {
+    '_authToken alone': [`_authToken=${_authToken}`, {
       '//registry.npmjs.org/:_authToken': _authToken,
     }],
-    '_authToken and email': [ `_authToken=${_authToken}\nemail=${email}`, {
+    '_authToken and email': [`_authToken=${_authToken}\nemail=${email}`, {
       '//registry.npmjs.org/:_authToken': _authToken,
       email,
     }],
-    'username and _password': [ `username=${username}\n_password=${_password}`, {
+    'username and _password': [`username=${username}\n_password=${_password}`, {
       '//registry.npmjs.org/:username': username,
       '//registry.npmjs.org/:_password': _password,
     }],
-    'username, password, email': [ `username=${username}\n_password=${_password}\nemail=${email}`, {
+    'username, password, email': [`username=${username}\n_password=${_password}\nemail=${email}`, {
       '//registry.npmjs.org/:username': username,
       '//registry.npmjs.org/:_password': _password,
       email,
@@ -1091,9 +1100,9 @@ t.test('workspaces', async (t) => {
 
     await config.load()
     t.equal(config.localPrefix, path, 'localPrefix is the root')
-    t.same(config.get('workspace'), [join(path, 'workspaces', 'three')], 'kept the specified workspace')
+    t.same(config.get('workspace'), [join(path, 'workspaces', 'three')], 'kept the workspace')
     t.equal(logs.length, 2, 'got two log messages')
-    t.match(logs[0], ['warn', /^ignoring workspace config/], 'warned about ignored workspace config')
+    t.match(logs[0], ['warn', /^ignoring workspace config/], 'warned about ignored config')
     t.match(logs[1], ['info', /^found workspace root at/], 'logged info about workspace root')
   })
 
