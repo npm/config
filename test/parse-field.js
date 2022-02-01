@@ -2,7 +2,7 @@ const parseField = require('../lib/parse-field.js')
 const t = require('tap')
 const { resolve } = require('path')
 
-t.strictSame(parseField({a:1}, 'a'), {a:1})
+t.strictSame(parseField({ a: 1 }, 'a'), { a: 1 })
 
 const opts = {
   platform: 'posix',

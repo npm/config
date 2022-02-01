@@ -4,10 +4,11 @@ const types = require('./fixtures/types.js')
 const descriptions = {}
 for (const [name, type] of Object.entries(types)) {
   const desc = typeDescription(type)
-  if (name === 'local-address')
+  if (name === 'local-address') {
     t.strictSame(desc.sort(), type.filter(t => t !== undefined).sort())
-  else
+  } else {
     descriptions[name] = desc
+  }
 }
 
 t.matchSnapshot(descriptions)

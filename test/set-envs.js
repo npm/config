@@ -45,7 +45,7 @@ t.test('set envs that are not defaults and not already in env', t => {
   setEnvs(config)
   t.strictSame(env, {
     ...extras,
-    npm_config_call: 'me, maybe'
+    npm_config_call: 'me, maybe',
   }, 'set in env, because changed from default in cli')
   envConf.call = 'me, maybe'
   cliConf.call = ''
@@ -55,7 +55,7 @@ t.test('set envs that are not defaults and not already in env', t => {
     ...extras,
     npm_config_call: '',
     npm_config_node_options: 'some options for node',
-    NODE_OPTIONS: 'some options for node'
+    NODE_OPTIONS: 'some options for node',
   }, 'set in env, because changed from default in env, back to default in cli')
   t.end()
 })
@@ -95,14 +95,14 @@ t.test('set envs that are not defaults and not already in env, array style', t =
   setEnvs(config)
   t.strictSame(env, {
     ...extras,
-    npm_config_omit: 'dev\n\noptional'
+    npm_config_omit: 'dev\n\noptional',
   }, 'set in env, because changed from default in cli')
   envConf.omit = ['optional', 'peer']
   cliConf.omit = []
   setEnvs(config)
   t.strictSame(env, {
     ...extras,
-    npm_config_omit: ''
+    npm_config_omit: '',
   }, 'set in env, because changed from default in env, back to default in cli')
   t.end()
 })
@@ -139,19 +139,19 @@ t.test('set envs that are not defaults and not already in env, boolean edition',
   delete envConf.audit
   cliConf.audit = false
   cliConf.ignoreObjects = {
-    some: { object: 12345 }
+    some: { object: 12345 },
   }
   setEnvs(config)
   t.strictSame(env, {
     ...extras,
-    npm_config_audit: ''
+    npm_config_audit: '',
   }, 'set in env, because changed from default in cli')
   envConf.audit = false
   cliConf.audit = true
   setEnvs(config)
   t.strictSame(env, {
     ...extras,
-    npm_config_audit: 'true'
+    npm_config_audit: 'true',
   }, 'set in env, because changed from default in env, back to default in cli')
   t.end()
 })
