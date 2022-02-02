@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@npmcli/template-oss": "^2.5.1",
-    "tap": "^15.0.4"
+    "tap": "^15.1.6"
   },
   "dependencies": {
     "@npmcli/map-workspaces": "^2.0.0",
