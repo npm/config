@@ -1,4 +1,4 @@
-const log = require('../lib/proc-log.js')
+const log = require('proc-log')
 const t = require('tap')
 const logs = []
 process.on('log', (...msg) => logs.push(msg))

@@ -7,7 +7,7 @@ t.strictSame(parseField({ a: 1 }, 'a'), { a: 1 })
 const opts = {
   platform: 'posix',
   types: require('./fixtures/types.js'),
-  log: require('../lib/proc-log.js'),
+  log: require('proc-log'),
   home: '/home/user',
   env: { foo: 'bar' },
 }

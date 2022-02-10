@@ -80,7 +80,7 @@ const conf = new Config({
   cwd: process.cwd(),
   // optional, defaults to emitting 'log' events on process object
   // only silly, verbose, warn, and error are logged by this module
-  log: require('npmlog')
+  log: require('proc-log')
 })
 
 // returns a promise that fails if config loading fails, and
