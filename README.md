@@ -78,9 +78,12 @@ const conf = new Config({
   platform: process.platform,
   // optional, defaults to process.cwd()
   cwd: process.cwd(),
-  // optional, defaults to emitting 'log' events on process object
-  // only silly, verbose, warn, and error are logged by this module
-  log: require('proc-log')
+})
+
+// emits log events on the process object
+// see `proc-log` for more info
+process.on('log', (level, ...args) => {
+  console.log(level, ...args)
 })
 
 // returns a promise that fails if config loading fails, and
@@ -124,8 +127,6 @@ Options:
   Windows.
 - `execPath` Optional, defaults to `process.execPath`.  Used to infer the
   `globalPrefix`.
-- `log` Optional, the object used to log debug messages, warnings, and
-  errors.  Defaults to emitting on the `process` object.
 - `env` Optional, defaults to `process.env`.  Source of the environment
   variables for configuration.
 - `argv` Optional, defaults to `process.argv`.  Source of the CLI options
@@ -161,7 +162,6 @@ Fields:
 - `argv` The `argv` param
 - `execPath` The `execPath` param
 - `platform` The `platform` param
-- `log` The `log` param
 - `defaults` The `defaults` param
 - `shorthands` The `shorthands` param
 - `types` The `types` param

@@ -140,11 +140,9 @@ loglevel = yolo
   })
 
   const logs = []
-  const log = {
-    info: (...msg) => logs.push(['info', ...msg]),
-    warn: (...msg) => logs.push(['warn', ...msg]),
-    verbose: (...msg) => logs.push(['verbose', ...msg]),
-  }
+  const logHandler = (...args) => logs.push(args)
+  process.on('log', logHandler)
+  t.teardown(() => process.off('log', logHandler))
 
   const argv = [
     process.execPath,
@@ -217,7 +215,6 @@ loglevel = yolo
       env: {},
       argv: [process.execPath, __filename, '--userconfig', `${path}/WEIRD-ERROR`],
       cwd: path,
-      log,
       shorthands,
       definitions,
     })
@@ -239,7 +236,6 @@ loglevel = yolo
       npmPath: `${path}/npm`,
       env,
       argv,
-      log,
       cwd: `${path}/project`,
 
       shorthands,
@@ -437,6 +433,7 @@ loglevel = yolo
       message: 'invalid config location param: yolo',
     })
     t.equal(config.valid, false, 'config should not be valid')
+    logs.length = 0
   })
 
   t.test('load configs from files, cli, and env, no builtin or project', async t => {
@@ -450,7 +447,6 @@ loglevel = yolo
       npmPath: path,
       env,
       argv,
-      log,
       cwd: `${path}/project-no-config`,
 
       // should prepend DESTDIR to /global
@@ -1032,11 +1028,9 @@ t.test('workspaces', async (t) => {
   }))
 
   const logs = []
-  const log = {
-    info: (...msg) => logs.push(['info', ...msg]),
-    warn: (...msg) => logs.push(['warn', ...msg]),
-    verbose: (...msg) => logs.push(['verbose', ...msg]),
-  }
+  const logHandler = (...args) => logs.push(args)
+  process.on('log', logHandler)
+  t.teardown(() => process.off('log', logHandler))
   t.afterEach(() => logs.length = 0)
 
   t.test('finds own parent', async (t) => {
@@ -1051,7 +1045,6 @@ t.test('workspaces', async (t) => {
       cwd: `${path}/workspaces/one`,
       shorthands,
       definitions,
-      log,
     })
 
     await config.load()
@@ -1073,7 +1066,6 @@ t.test('workspaces', async (t) => {
       cwd: `${path}/workspaces/one`,
       shorthands,
       definitions,
-      log,
     })
 
     await config.load()
@@ -1095,7 +1087,6 @@ t.test('workspaces', async (t) => {
       cwd: `${path}/workspaces/three`,
       shorthands,
       definitions,
-      log,
     })
 
     await config.load()
@@ -1118,7 +1109,6 @@ t.test('workspaces', async (t) => {
       cwd: `${path}/workspaces/one`,
       shorthands,
       definitions,
-      log,
     })
 
     await config.load()
@@ -1139,7 +1129,6 @@ t.test('workspaces', async (t) => {
       cwd: `${path}/workspaces/one`,
       shorthands,
       definitions,
-      log,
     })
 
     await config.load()
@@ -1166,7 +1155,6 @@ t.test('workspaces', async (t) => {
       cwd: `${path}/workspaces/one`,
       shorthands,
       definitions,
-      log,
     })
 
     await config.load()
