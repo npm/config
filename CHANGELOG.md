@@ -1,5 +1,17 @@
 # Changelog
 
+### [4.0.1](https://www.github.com/npm/config/compare/v4.0.0...v4.0.1) (2022-03-02)
+
+
+### Bug Fixes
+
+* skip workspace detection when in global mode ([#47](https://www.github.com/npm/config/issues/47)) ([bedff61](https://www.github.com/npm/config/commit/bedff61c6f074f21c1586afe391dc2cb6e821619))
+
+
+### Dependencies
+
+* update @npmcli/map-workspaces requirement from ^2.0.0 to ^2.0.1 ([#43](https://www.github.com/npm/config/issues/43)) ([c397ab8](https://www.github.com/npm/config/commit/c397ab88c459fc477ae9094ec0ee0b571e6bb8ed))
+
 ## [4.0.0](https://www.github.com/npm/config/compare/v3.0.1...v4.0.0) (2022-02-14)
 
 
