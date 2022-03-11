@@ -1,5 +1,12 @@
 # Changelog
 
+### [4.0.2](https://www.github.com/npm/config/compare/v4.0.1...v4.0.2) (2022-03-11)
+
+
+### Dependencies
+
+* update @npmcli/map-workspaces requirement from ^2.0.1 to ^2.0.2 ([#49](https://www.github.com/npm/config/issues/49)) ([9a0f182](https://www.github.com/npm/config/commit/9a0f182c4fa46dadccc631a244678a3c469ad63a))
+
 ### [4.0.1](https://www.github.com/npm/config/compare/v4.0.0...v4.0.1) (2022-03-02)
 
 
