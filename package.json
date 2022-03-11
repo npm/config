@@ -34,7 +34,7 @@
     "tap": "^15.1.6"
   },
   "dependencies": {
-    "@npmcli/map-workspaces": "^2.0.1",
+    "@npmcli/map-workspaces": "^2.0.2",
     "ini": "^2.0.0",
     "mkdirp-infer-owner": "^2.0.0",
     "nopt": "^5.0.0",
