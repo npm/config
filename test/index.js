@@ -355,7 +355,7 @@ loglevel = yolo
       ['warn', 'invalid config', 'Must be one or more', 'numeric value'],
       ['warn', 'invalid config', 'prefix=true', 'set in command line options'],
       ['warn', 'invalid config', 'Must be', 'valid filesystem path'],
-      ['verbose', 'config', 'also', 'Please use --include=dev instead.'],
+      ['warn', 'config', 'also', 'Please use --include=dev instead.'],
       ['warn', 'invalid config', 'loglevel="yolo"',
         `set in ${resolve(path, 'project/.npmrc')}`],
       ['warn', 'invalid config', 'Must be one of:',
@@ -506,7 +506,7 @@ loglevel = yolo
       ['warn', 'invalid config', 'Must be one or more', 'numeric value'],
       ['warn', 'invalid config', 'prefix=true', 'set in command line options'],
       ['warn', 'invalid config', 'Must be', 'valid filesystem path'],
-      ['verbose', 'config', 'also', 'Please use --include=dev instead.'],
+      ['warn', 'config', 'also', 'Please use --include=dev instead.'],
     ])
   })
 
