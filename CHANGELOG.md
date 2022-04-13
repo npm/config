@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.1.0](https://github.com/npm/config/compare/v4.0.2...v4.1.0) (2022-04-13)
+
+
+### Features
+
+* warn on deprecated config ([#62](https://github.com/npm/config/issues/62)) ([190065e](https://github.com/npm/config/commit/190065ef53d39a1e09486639c710dabdd73d8a7c))
+
 ### [4.0.2](https://github.com/npm/config/compare/v4.0.1...v4.0.2) (2022-04-05)
 
 
