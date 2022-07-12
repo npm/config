@@ -125,6 +125,72 @@ exports[`test/index.js TAP credentials management nerfed_lcAuthToken > other reg
 Object {}
 `
 
+exports[`test/index.js TAP credentials management nerfed_mtls > default registry 1`] = `
+Object {
+  "certfile": "/path/to/cert",
+  "keyfile": "/path/to/key",
+}
+`
+
+exports[`test/index.js TAP credentials management nerfed_mtls > default registry after set 1`] = `
+Object {
+  "certfile": "/path/to/cert",
+  "keyfile": "/path/to/key",
+}
+`
+
+exports[`test/index.js TAP credentials management nerfed_mtls > other registry 1`] = `
+Object {}
+`
+
+exports[`test/index.js TAP credentials management nerfed_mtlsAuthToken > default registry 1`] = `
+Object {
+  "certfile": "/path/to/cert",
+  "keyfile": "/path/to/key",
+  "token": "0bad1de4",
+}
+`
+
+exports[`test/index.js TAP credentials management nerfed_mtlsAuthToken > default registry after set 1`] = `
+Object {
+  "certfile": "/path/to/cert",
+  "keyfile": "/path/to/key",
+  "token": "0bad1de4",
+}
+`
+
+exports[`test/index.js TAP credentials management nerfed_mtlsAuthToken > other registry 1`] = `
+Object {}
+`
+
+exports[`test/index.js TAP credentials management nerfed_mtlsUserPass > default registry 1`] = `
+Object {
+  "auth": "aGVsbG86d29ybGQ=",
+  "certfile": "/path/to/cert",
+  "email": "i@izs.me",
+  "keyfile": "/path/to/key",
+  "password": "world",
+  "username": "hello",
+}
+`
+
+exports[`test/index.js TAP credentials management nerfed_mtlsUserPass > default registry after set 1`] = `
+Object {
+  "auth": "aGVsbG86d29ybGQ=",
+  "certfile": "/path/to/cert",
+  "email": "i@izs.me",
+  "keyfile": "/path/to/key",
+  "password": "world",
+  "username": "hello",
+}
+`
+
+exports[`test/index.js TAP credentials management nerfed_mtlsUserPass > other registry 1`] = `
+Object {
+  "email": "i@izs.me",
+}
+`
+
 exports[`test/index.js TAP credentials management nerfed_userpass > default registry 1`] = `
 Object {
   "auth": "aGVsbG86d29ybGQ=",

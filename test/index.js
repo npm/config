@@ -625,6 +625,20 @@ t.test('credentials management', async t => {
     nerfed_auth: { // note: does not load, because we don't do _auth per reg
       '.npmrc': `//registry.example/:_auth = ${Buffer.from('hello:world').toString('base64')}`,
     },
+    nerfed_mtls: { '.npmrc': `//registry.example/:certfile = /path/to/cert
+//registry.example/:keyfile = /path/to/key`,
+    },
+    nerfed_mtlsAuthToken: { '.npmrc': `//registry.example/:_authToken = 0bad1de4
+//registry.example/:certfile = /path/to/cert
+//registry.example/:keyfile = /path/to/key`,
+    },
+    nerfed_mtlsUserPass: { '.npmrc': `//registry.example/:username = hello
+//registry.example/:_password = ${Buffer.from('world').toString('base64')}
+//registry.example/:email = i@izs.me
+//registry.example/:always-auth = "false"
+//registry.example/:certfile = /path/to/cert
+//registry.example/:keyfile = /path/to/key`,
+    },
     def_userpass: {
       '.npmrc': `username = hello
 _password = ${Buffer.from('world').toString('base64')}
@@ -712,14 +726,14 @@ always-auth = true`,
       }
 
       // need both or none of user/pass
-      if (!d.token && (!d.username || !d.password)) {
+      if (!d.token && (!d.username || !d.password) && (!d.certfile || !d.keyfile)) {
         t.throws(() => c.setCredentialsByURI(defReg, d))
       } else {
         c.setCredentialsByURI(defReg, d)
         t.matchSnapshot(c.getCredentialsByURI(defReg), 'default registry after set')
       }
 
-      if (!o.token && (!o.username || !o.password)) {
+      if (!o.token && (!o.username || !o.password) && (!o.certfile || !o.keyfile)) {
         t.throws(() => c.setCredentialsByURI(otherReg, o), {}, { otherReg, o })
       } else {
         c.setCredentialsByURI(otherReg, o)
