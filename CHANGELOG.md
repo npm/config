@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.0](https://github.com/npm/config/compare/v4.1.0...v4.2.0) (2022-07-18)
+
+
+### Features
+
+* detect registry-scoped certfile and keyfile options ([#69](https://github.com/npm/config/issues/69)) ([e58a4f1](https://github.com/npm/config/commit/e58a4f18f0ec0820fe57ccaff34c4135ece12558))
+
 ## [4.1.0](https://github.com/npm/config/compare/v4.0.2...v4.1.0) (2022-04-13)
 
 
