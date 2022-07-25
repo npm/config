@@ -394,6 +394,41 @@ loglevel = yolo
       'should return true once again now that values is retrieved from defaults')
   })
 
+  t.test('normalize config env keys', async t => {
+    const env = {
+      npm_config_bAr: 'bAr env',
+      NPM_CONFIG_FOO: 'FOO env',
+      'npm_config_//reg.example/UP_CASE/:username': 'ME',
+      'npm_config_//reg.example/UP_CASE/:_password': 'Shhhh!',
+      'NPM_CONFIG_//reg.example/UP_CASE/:_authToken': 'sEcReT',
+    }
+    const config = new Config({
+      npmPath: `${path}/npm`,
+      env,
+      argv,
+      cwd: `${path}/project`,
+
+      shorthands,
+      definitions,
+    })
+
+    await config.load()
+
+    t.strictSame({
+      bar: config.get('bar'),
+      foo: config.get('foo'),
+      '//reg.example/UP_CASE/:username': config.get('//reg.example/UP_CASE/:username'),
+      '//reg.example/UP_CASE/:_password': config.get('//reg.example/UP_CASE/:_password'),
+      '//reg.example/UP_CASE/:_authToken': config.get('//reg.example/UP_CASE/:_authToken'),
+    }, {
+      bar: 'bAr env',
+      foo: 'FOO env',
+      '//reg.example/UP_CASE/:username': 'ME',
+      '//reg.example/UP_CASE/:_password': 'Shhhh!',
+      '//reg.example/UP_CASE/:_authToken': 'sEcReT',
+    })
+  })
+
   t.test('do not double-load project/user config', async t => {
     const env = {
       npm_config_foo: 'from-env',
@@ -615,7 +650,6 @@ t.test('raise error if reading ca file error other than ENOENT', async t => {
 t.test('credentials management', async t => {
   const fixtures = {
     nerfed_authToken: { '.npmrc': '//registry.example/:_authToken = 0bad1de4' },
-    nerfed_lcAuthToken: { '.npmrc': '//registry.example/:_authtoken = 0bad1de4' },
     nerfed_userpass: {
       '.npmrc': `//registry.example/:username = hello
 //registry.example/:_password = ${Buffer.from('world').toString('base64')}
