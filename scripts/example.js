@@ -39,4 +39,5 @@ config.load().then(async () => {
     }
   }
   console.log('argv:', { raw: config.argv, parsed: config.parsedArgv })
-})
+  return undefined
+}).catch(() => {})
