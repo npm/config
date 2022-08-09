@@ -109,22 +109,6 @@ exports[`test/index.js TAP credentials management nerfed_authToken > other regis
 Object {}
 `
 
-exports[`test/index.js TAP credentials management nerfed_lcAuthToken > default registry 1`] = `
-Object {
-  "token": "0bad1de4",
-}
-`
-
-exports[`test/index.js TAP credentials management nerfed_lcAuthToken > default registry after set 1`] = `
-Object {
-  "token": "0bad1de4",
-}
-`
-
-exports[`test/index.js TAP credentials management nerfed_lcAuthToken > other registry 1`] = `
-Object {}
-`
-
 exports[`test/index.js TAP credentials management nerfed_mtls > default registry 1`] = `
 Object {
   "certfile": "/path/to/cert",
