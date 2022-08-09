@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.2.1](https://github.com/npm/config/compare/v4.2.0...v4.2.1) (2022-08-09)
+
+
+### Bug Fixes
+
+* correctly handle nerf-darted env vars ([#74](https://github.com/npm/config/issues/74)) ([71f559b](https://github.com/npm/config/commit/71f559b08e01616b53f61e1cf385fc44162e2d66))
+* linting ([#75](https://github.com/npm/config/issues/75)) ([deb1001](https://github.com/npm/config/commit/deb10011d1b5e3df84b7d13284ea55b07dd62b63))
+
+
+### Dependencies
+
+* bump nopt from 5.0.0 to 6.0.0 ([#72](https://github.com/npm/config/issues/72)) ([d825726](https://github.com/npm/config/commit/d825726049644f5bbe0edf27b5600cc60ae14ee5))
+
 ## [4.2.0](https://github.com/npm/config/compare/v4.1.0...v4.2.0) (2022-07-18)
 
 
