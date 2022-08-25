@@ -1005,18 +1005,27 @@ t.test('nerfdart auths set at the top level into the registry', async t => {
       email,
     }],
     // handled invalid/legacy cases
-    'username, no _password': [`username=${username}`, {}],
-    '_password, no username': [`_password=${_password}`, {}],
+    'username, no _password': [`username=${username}`, {}, true],
+    '_password, no username': [`_password=${_password}`, {}, true],
     // de-nerfdart the email, if present in that way
     'nerf-darted email': [`//registry.npmjs.org/:email=${email}`, {
       email,
-    }],
+    }, true],
   }
 
+  const logs = []
+  const logHandler = (...args) => logs.push(args)
+  process.on('log', logHandler)
+  t.teardown(() => {
+    process.removeListener('log', logHandler)
+  })
   const cwd = process.cwd()
-  for (const [name, [ini, expect]] of Object.entries(cases)) {
+  for (const [name, [ini, expect, noWarn]] of Object.entries(cases)) {
     t.test(name, async t => {
-      t.teardown(() => process.chdir(cwd))
+      t.teardown(() => {
+        process.chdir(cwd)
+        logs.length = 0
+      })
       const path = t.testdir({
         '.npmrc': ini,
         'package.json': JSON.stringify({}),
@@ -1041,6 +1050,10 @@ t.test('nerfdart auths set at the top level into the registry', async t => {
       const c = new Config(opts)
       await c.load()
       t.same(c.list[3], expect)
+      if (!noWarn) {
+        t.equal(logs.length, 1, 'logged 1 message')
+        t.match(logs[0], /must be scoped to a registry/, 'logged auth warning')
+      }
     })
   }
 })
