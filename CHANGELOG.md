@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.2](https://github.com/npm/config/compare/v4.2.1...v4.2.2) (2022-08-25)
+
+
+### Bug Fixes
+
+* warn on bare auth related configs ([#78](https://github.com/npm/config/issues/78)) ([d4e582a](https://github.com/npm/config/commit/d4e582ab7d8d9f4a8615619bb7d3263df5de66e6))
+
 ## [4.2.1](https://github.com/npm/config/compare/v4.2.0...v4.2.1) (2022-08-09)
 
 
