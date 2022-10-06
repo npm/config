@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.0.0](https://github.com/npm/config/compare/v4.2.2...v5.0.0) (2022-10-06)
+
+### ⚠️ BREAKING CHANGES
+
+* unscoped auth configuration is no longer automatically scoped to a registry. the `validate` method is no longer called automatically. the `_auth` configuration key is no longer split into `username` and `_password`. errors will be thrown by `validate()` if problems are found.
+* `@npmcli/config` is now compatible with the following semver range for node: `^14.17.0 || ^16.13.0 || >=18.0.0`
+
+### Features
+
+* [`344ccd3`](https://github.com/npm/config/commit/344ccd3d07979d0cb36dad8a7fe2e9cbbdbdbc9e) [#92](https://github.com/npm/config/pull/92) throw errors for invalid auth configuration (#92) (@nlf)
+* [`aa25682`](https://github.com/npm/config/commit/aa256827d76ec9b1aea06eb3ebdd033067a5e604) [#87](https://github.com/npm/config/pull/87) postinstall for dependabot template-oss PR (@lukekarrys)
+
 ## [4.2.2](https://github.com/npm/config/compare/v4.2.1...v4.2.2) (2022-08-25)
 
 
