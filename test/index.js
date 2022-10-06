@@ -341,6 +341,8 @@ loglevel = yolo
       npm_config_builtin_config: 'true',
     }, 'set env values')
 
+    // warn logs are emitted as a side effect of validate
+    config.validate()
     t.strictSame(logs, [
       ['warn', 'invalid config', 'registry="hello"', 'set in command line options'],
       ['warn', 'invalid config', 'Must be', 'full url with "http://"'],
@@ -467,6 +469,7 @@ loglevel = yolo
     t.rejects(() => config.save('yolo'), {
       message: 'invalid config location param: yolo',
     })
+    config.validate()
     t.equal(config.valid, false, 'config should not be valid')
     logs.length = 0
   })
@@ -552,7 +555,7 @@ t.test('cafile loads as ca (and some saving tests)', async t => {
   const cafile = resolve(__dirname, 'fixtures', 'cafile')
   const dir = t.testdir({
     '.npmrc': `cafile = ${cafile}
-_authToken = deadbeefcafebadfoobarbaz42069
+//registry.npmjs.org/:_authToken = deadbeefcafebadfoobarbaz42069
 `,
   })
   const expect = `cafile=${cafile}
@@ -731,6 +734,29 @@ always-auth = true`,
           password: 'bar',
           email: 'asdf@quux.com',
         })
+      }
+
+      // the def_ and none_ prefixed cases have unscoped auth values and should throw
+      if (testCase.startsWith('def_') ||
+          testCase === 'none_authToken' ||
+          testCase === 'none_lcAuthToken') {
+        try {
+          c.validate()
+          // validate should throw, fail the test here if it doesn't
+          t.fail('validate should have thrown')
+        } catch (err) {
+          if (err.code !== 'ERR_INVALID_AUTH') {
+            throw err
+          }
+
+          // we got our expected invalid auth error, so now repair it
+          c.repair(err.problems)
+          t.ok(c.valid, 'config is valid')
+        }
+      } else {
+        // validate won't throw for these ones, so let's prove it and repair are no-ops
+        c.validate()
+        c.repair()
       }
 
       const d = c.getCredentialsByURI(defReg)
@@ -914,9 +940,12 @@ t.test('setting basic auth creds and email', async t => {
   t.strictSame(d.getCredentialsByURI(registry), { email: 'name@example.com' })
   d.set('_auth', _auth, 'user')
   t.equal(d.get('_auth', 'user'), _auth, '_auth was set')
+  d.repair()
   await d.save('user')
-  t.equal(d.get('_auth', 'user'), undefined, 'un-nerfed _auth deleted')
-  t.strictSame(d.getCredentialsByURI(registry), {
+  const e = new Config(opts)
+  await e.load()
+  t.equal(e.get('_auth', 'user'), undefined, 'un-nerfed _auth deleted')
+  t.strictSame(e.getCredentialsByURI(registry), {
     email: 'name@example.com',
     username: 'admin',
     password: 'admin',
@@ -944,17 +973,9 @@ t.test('setting username/password/email individually', async t => {
   c.set('_password', Buffer.from('admin').toString('base64'), 'user')
   t.equal(c.get('_password'), Buffer.from('admin').toString('base64'))
   t.equal(c.get('_auth'), undefined)
+  c.repair()
   await c.save('user')
-  t.equal(c.get('email'), 'name@example.com')
-  t.equal(c.get('username'), undefined)
-  t.equal(c.get('_password'), undefined)
-  t.equal(c.get('_auth'), undefined)
-  t.strictSame(c.getCredentialsByURI(registry), {
-    email: 'name@example.com',
-    username: 'admin',
-    password: 'admin',
-    auth: Buffer.from('admin:admin').toString('base64'),
-  })
+
   const d = new Config(opts)
   await d.load()
   t.equal(d.get('email'), 'name@example.com')
@@ -977,15 +998,13 @@ t.test('nerfdart auths set at the top level into the registry', async t => {
   const email = 'i@izs.me'
   const _authToken = 'deadbeefblahblah'
 
-  // name: [ini, expect]
+  // name: [ini, expect, wontThrow]
   const cases = {
     '_auth only, no email': [`_auth=${_auth}`, {
-      '//registry.npmjs.org/:username': username,
-      '//registry.npmjs.org/:_password': _password,
+      '//registry.npmjs.org/:_auth': _auth,
     }],
     '_auth with email': [`_auth=${_auth}\nemail=${email}`, {
-      '//registry.npmjs.org/:username': username,
-      '//registry.npmjs.org/:_password': _password,
+      '//registry.npmjs.org/:_auth': _auth,
       email,
     }],
     '_authToken alone': [`_authToken=${_authToken}`, {
@@ -1005,8 +1024,10 @@ t.test('nerfdart auths set at the top level into the registry', async t => {
       email,
     }],
     // handled invalid/legacy cases
-    'username, no _password': [`username=${username}`, {}, true],
-    '_password, no username': [`_password=${_password}`, {}, true],
+    'username, no _password': [`username=${username}`, {}],
+    '_password, no username': [`_password=${_password}`, {}],
+    '_authtoken instead of _authToken': [`_authtoken=${_authToken}`, {}],
+    '-authtoken instead of _authToken': [`-authtoken=${_authToken}`, {}],
     // de-nerfdart the email, if present in that way
     'nerf-darted email': [`//registry.npmjs.org/:email=${email}`, {
       email,
@@ -1020,7 +1041,7 @@ t.test('nerfdart auths set at the top level into the registry', async t => {
     process.removeListener('log', logHandler)
   })
   const cwd = process.cwd()
-  for (const [name, [ini, expect, noWarn]] of Object.entries(cases)) {
+  for (const [name, [ini, expect, wontThrow]] of Object.entries(cases)) {
     t.test(name, async t => {
       t.teardown(() => {
         process.chdir(cwd)
@@ -1047,13 +1068,18 @@ t.test('nerfdart auths set at the top level into the registry', async t => {
         },
         npmPath: process.cwd(),
       }
+
       const c = new Config(opts)
       await c.load()
-      t.same(c.list[3], expect)
-      if (!noWarn) {
-        t.equal(logs.length, 1, 'logged 1 message')
-        t.match(logs[0], /must be scoped to a registry/, 'logged auth warning')
+
+      if (!wontThrow) {
+        t.throws(() => c.validate(), { code: 'ERR_INVALID_AUTH' })
       }
+
+      // now we go ahead and do the repair, and save
+      c.repair()
+      await c.save('user')
+      t.same(c.list[3], expect)
     })
   }
 })

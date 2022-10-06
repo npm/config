@@ -89,6 +89,7 @@ process.on('log', (level, ...args) => {
 // returns a promise that fails if config loading fails, and
 // resolves when the config object is ready for action
 conf.load().then(() => {
+  conf.validate()
   console.log('loaded ok! some-key = ' + conf.get('some-key'))
 }).catch(er => {
   console.error('error loading configs!', er)
@@ -210,6 +211,10 @@ Delete the configuration key from the specified level in the config stack.
 Verify that all known configuration options are set to valid values, and
 log a warning if they are invalid.
 
+Invalid auth options will cause this method to throw an error with a `code`
+property of `ERR_INVALID_AUTH`, and a `problems` property listing the specific
+concerns with the current configuration.
+
 If `where` is not set, then all config objects are validated.
 
 Returns `true` if all configs are valid.
@@ -217,6 +222,14 @@ Returns `true` if all configs are valid.
 Note that it's usually enough (and more efficient) to just check
 `config.valid`, since each data object is marked for re-evaluation on every
 `config.set()` operation.
+
+### `config.repair(problems)`
+
+Accept an optional array of problems (as thrown by `config.validate()`) and
+perform the necessary steps to resolve them. If no problems are provided,
+this method will call `config.validate()` internally to retrieve them.
+
+Note that you must `await config.save('user')` in order to persist the changes.
 
 ### `config.isDefault(key)`
 
