@@ -41,7 +41,7 @@
     "mkdirp-infer-owner": "^2.0.0",
     "nopt": "^6.0.0",
     "proc-log": "^2.0.0",
-    "read-package-json-fast": "^2.0.3",
+    "read-package-json-fast": "^3.0.0",
     "semver": "^7.3.5",
     "walk-up-path": "^1.0.0"
   },
