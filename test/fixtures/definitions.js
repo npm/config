@@ -10,6 +10,10 @@ const Umask = require('../../lib/type-defs.js').Umask.type
 // used by cafile flattening to flatOptions.ca
 const fs = require('fs')
 const maybeReadFile = file => {
+  if (file.includes('WEIRD-ERROR')) {
+    throw Object.assign(new Error('weird error'), { code: 'EWEIRD' })
+  }
+
   try {
     return fs.readFileSync(file, 'utf8')
   } catch (er) {

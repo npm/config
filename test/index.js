@@ -1,23 +1,7 @@
 const t = require('tap')
 
-// hackedy hacky hack
 const fs = require('fs')
-const { readFile, readFileSync } = fs
-fs.readFile = (path, ...args) => {
-  if (path.match(/WEIRD-ERROR/)) {
-    const cb = args.pop()
-    cb(Object.assign(new Error('weird error'), { code: 'EWEIRD' }))
-  } else {
-    return readFile(path, ...args)
-  }
-}
-fs.readFileSync = (path, ...args) => {
-  if (path.match(/WEIRD-ERROR/)) {
-    throw Object.assign(new Error('weird error'), { code: 'EWEIRD' })
-  } else {
-    return readFileSync(path, ...args)
-  }
-}
+const { readFileSync } = fs
 
 // when running with `npm test` it adds environment variables that
 // mess with the things we expect here, so delete all of those.
@@ -34,9 +18,23 @@ const typeDefs = require('../lib/type-defs.js')
 
 const { resolve, join, dirname } = require('path')
 
-const Config = require('../')
+const Config = t.mock('../', {
+  'fs/promises': {
+    ...fs.promises,
+    readFile: async (path, ...args) => {
+      if (path.includes('WEIRD-ERROR')) {
+        throw Object.assign(new Error('weird error'), { code: 'EWEIRD' })
+      }
 
-t.equal(typeDefs, Config.typeDefs, 'exposes type definitions')
+      return fs.promises.readFile(path, ...args)
+    },
+  },
+})
+
+// because we used t.mock above, the require cache gets blown and we lose our direct equality
+// on the typeDefs. to get around that, we require an un-mocked Config and assert against that
+const RealConfig = require('../')
+t.equal(typeDefs, RealConfig.typeDefs, 'exposes type definitions')
 
 t.test('construct with no settings, get default values for stuff', t => {
   const npmPath = t.testdir()
