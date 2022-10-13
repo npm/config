@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.0.0](https://github.com/npm/config/compare/v5.0.0...v6.0.0) (2022-10-13)
+
+### ⚠️ BREAKING CHANGES
+
+* this module no longer attempts to change file ownership automatically
+
+### Features
+
+* [`805535f`](https://github.com/npm/config/commit/805535ff6b7255a3a2fb5e7da392f53b1c2f3c04) [#96](https://github.com/npm/config/pull/96) do not alter file ownership (#96) (@nlf)
+
+### Dependencies
+
+* [`c62c19c`](https://github.com/npm/config/commit/c62c19cffc65a8b6e89cbd071bd7578f246312a9) [#95](https://github.com/npm/config/pull/95) bump read-package-json-fast from 2.0.3 to 3.0.0
+
 ## [5.0.0](https://github.com/npm/config/compare/v4.2.2...v5.0.0) (2022-10-06)
 
 ### ⚠️ BREAKING CHANGES
