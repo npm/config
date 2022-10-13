@@ -38,7 +38,6 @@
   "dependencies": {
     "@npmcli/map-workspaces": "^2.0.2",
     "ini": "^3.0.0",
-    "mkdirp-infer-owner": "^2.0.0",
     "nopt": "^6.0.0",
     "proc-log": "^2.0.0",
     "read-package-json-fast": "^3.0.0",
