@@ -36,7 +36,7 @@
     "tap": "^16.0.1"
   },
   "dependencies": {
-    "@npmcli/map-workspaces": "^2.0.2",
+    "@npmcli/map-workspaces": "^3.0.0",
     "ini": "^3.0.0",
     "nopt": "^6.0.0",
     "proc-log": "^3.0.0",
