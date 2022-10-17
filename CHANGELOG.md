@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.1](https://github.com/npm/config/compare/v6.0.0...v6.0.1) (2022-10-17)
+
+### Dependencies
+
+* [`dca20cc`](https://github.com/npm/config/commit/dca20cc00c0cbebd9d1a1cf1962e32e99057ea8e) [#99](https://github.com/npm/config/pull/99) bump @npmcli/map-workspaces from 2.0.4 to 3.0.0
+* [`fc42456`](https://github.com/npm/config/commit/fc424565014cc155e902940221b6283cbb40faf4) [#100](https://github.com/npm/config/pull/100) bump proc-log from 2.0.1 to 3.0.0
+
 ## [6.0.0](https://github.com/npm/config/compare/v5.0.0...v6.0.0) (2022-10-13)
 
 ### ⚠️ BREAKING CHANGES
