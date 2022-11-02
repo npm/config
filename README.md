@@ -1,3 +1,9 @@
+## NOTICE
+
+The code for this module is now maintained inside a workspace of the npm cli itself:
+
+https://github.com/npm/cli/blob/HEAD/workspaces/config
+
 # `@npmcli/config`
 
 Configuration management for the npm cli.
