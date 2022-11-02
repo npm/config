@@ -1,5 +1,11 @@
 # Changelog
 
+## [6.0.2](https://github.com/npm/config/compare/v6.0.1...v6.0.2) (2022-11-02)
+
+### Dependencies
+
+* [`e567178`](https://github.com/npm/config/commit/e5671782566b6ffad0d50029574fc3c6443d5104) [#105](https://github.com/npm/config/pull/105) bump nopt from 6.0.0 to 7.0.0 (#105)
+
 ## [6.0.1](https://github.com/npm/config/compare/v6.0.0...v6.0.1) (2022-10-17)
 
 ### Dependencies
